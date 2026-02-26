@@ -12,12 +12,7 @@ const app = express()
 const puerto = parseInt(process.env.PUERTO || '3000', 10)
 const esVercel = process.env.VERCEL === '1'
 
-const orígenesCors = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  process.env.FRONTEND_URL,
-].filter(Boolean)
-app.use(cors({ origin: orígenesCors.length ? orígenesCors : true, credentials: true }))
+app.use(cors({ origin: true, credentials: true }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
