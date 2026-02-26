@@ -36,7 +36,8 @@ app.use(async (req, res, next) => {
   }
 })
 
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')))
+const directorioUploads = esVercel ? '/tmp/uploads' : path.join(__dirname, 'public', 'uploads')
+app.use('/uploads', express.static(directorioUploads))
 app.use('/api/auth', rutasAuth)
 app.use('/api/productos', rutasProductos)
 // Rutas de pagos (Mercado Pago) se cargan bajo demanda para evitar fallos en serverless
