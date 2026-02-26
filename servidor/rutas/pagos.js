@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import { crearPreferencia, obtenerPago } from '../mercadoPago.js'
 
 const router = Router()
 
@@ -21,6 +20,7 @@ router.post('/preferencia', async (req, res) => {
       })
     }
 
+    const { crearPreferencia } = await import('../mercadoPago.js')
     const { url } = await crearPreferencia(items)
     if (!url) {
       return res.status(502).json({ mensaje: 'No se pudo obtener la URL de pago de Mercado Pago.' })
@@ -54,6 +54,7 @@ router.post('/webhook', (req, res) => {
 
   ;(async () => {
     try {
+      const { obtenerPago } = await import('../mercadoPago.js')
       const pago = await obtenerPago(String(paymentId))
       if (!pago) return
       const status = pago.status

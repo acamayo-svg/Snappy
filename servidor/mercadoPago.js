@@ -40,7 +40,7 @@ export async function obtenerPago(paymentId) {
  * @returns {Promise<{ url: string }>} url es init_point o sandbox_init_point
  */
 export async function crearPreferencia(items, backUrls = {}) {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+  const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
   const body = {
     items: items.map((item) => ({
       title: item.title,

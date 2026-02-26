@@ -2,12 +2,14 @@ import pg from 'pg'
 
 const { Pool } = pg
 
+const isLocal = !process.env.VERCEL && (!process.env.DB_HOST || process.env.DB_HOST === 'localhost')
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5433', 10),
   database: process.env.DB_NAME || 'snappy',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
+  ...(isLocal ? {} : { ssl: { rejectUnauthorized: false } }),
 })
 
 export async function obtenerConexion() {

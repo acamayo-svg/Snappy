@@ -5,10 +5,11 @@ import { fileURLToPath } from 'url'
 import { randomUUID } from 'crypto'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const esVercel = process.env.VERCEL === '1'
+// En Vercel el sistema de archivos es de solo lectura; usar /tmp para subidas o no crear carpeta
+const directorioUploads = esVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'public', 'uploads')
 
-const directorioUploads = path.join(__dirname, '..', 'public', 'uploads')
-
-if (!fs.existsSync(directorioUploads)) {
+if (!esVercel && !fs.existsSync(directorioUploads)) {
   fs.mkdirSync(directorioUploads, { recursive: true })
 }
 
@@ -16,7 +17,12 @@ const extensionesPermitidas = /\.(jpe?g|png|gif|webp)$/i
 const tiposMimePermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const almacenamiento = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, directorioUploads),
+  destination: (_req, _file, cb) => {
+    if (esVercel && !fs.existsSync(directorioUploads)) {
+      try { fs.mkdirSync(directorioUploads, { recursive: true }) } catch (_) {}
+    }
+    cb(null, directorioUploads)
+  },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname) || '.jpg'
     const nombreSeguro = `${randomUUID()}${ext.toLowerCase()}`

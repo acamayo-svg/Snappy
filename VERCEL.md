@@ -39,7 +39,7 @@ En Vercel se configuran **dos proyectos**: uno para el **frontend** (React/Vite)
    - `DB_PASSWORD` – contraseña.
    - `JWT_CLAVE` – la misma que usas en local.
    - `MP_ACCESS_TOKEN` – tu Access Token de Mercado Pago (prueba o producción).
-   - `FRONTEND_URL` – URL del front en Vercel, ej. `https://snappy-xxx.vercel.app`  
+   - `FRONTEND_URL` – URL del front en Vercel, ej. `https://snappy-xxx.vercel.app` (sin barra final)  
      (para CORS y `back_urls` de Mercado Pago).
 4. **Deploy.**  
    La API quedará en una URL tipo: `https://snappy-servidor-xxx.vercel.app`.
@@ -88,3 +88,19 @@ Creas el proyecto y la base, copias la cadena de conexión o host/puerto/nombre/
 | Webhook MP       | En panel MP                   | `https://snappy-servidor-xxx.vercel.app/api/pagos/webhook` |
 
 Con esto ya tienes la configuración para usar Vercel con una URL pública para el front y otra para la API (y para el webhook).
+
+---
+
+## Si la API devuelve 500 (FUNCTION_INVOCATION_FAILED)
+
+1. **Probar ruta de diagnóstico**  
+   Abre en el navegador: `https://tu-api.vercel.app/api/health`  
+   - Si responde `{"ok":true,"mensaje":"API Snappy"}`: la función arranca bien; el fallo suele ser la base de datos (credenciales, SSL o red).  
+   - Si también da 500: el error suele estar al cargar el código (imports, dependencias). Revisa los logs en Vercel.
+
+2. **Revisar logs en Vercel**  
+   En el proyecto de la API: **Deployments** → último despliegue → **Logs** o **Runtime Logs**. Ahí verás el mensaje o stack trace del error (conexión a PostgreSQL, timeout, variable de entorno faltante, etc.).
+
+3. **Base de datos en la nube (Supabase, Neon, etc.)**  
+   - La API ya usa **SSL** para la conexión cuando no es localhost (necesario para Supabase desde Vercel).  
+   - Comprueba que en Vercel tengas bien definidas `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (mismas que en el panel de tu proveedor, por ejemplo Session Pooler en Supabase).
