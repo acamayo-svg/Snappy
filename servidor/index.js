@@ -25,7 +25,7 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, mensaje: 'API Snappy' })
 })
 app.get('/', (req, res) => {
-  res.redirect(302, '/api/health')
+  res.json({ ok: true, mensaje: 'API Snappy' })
 })
 
 let dbInicializada = false
