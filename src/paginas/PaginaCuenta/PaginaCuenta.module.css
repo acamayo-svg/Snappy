@@ -1,0 +1,177 @@
+.contenedor {
+  min-height: calc(100vh - 64px);
+  padding: 2rem 1.25rem;
+}
+
+.contenido {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 0 0 0.35rem;
+  font-size: var(--snappy-texto-3xl);
+  font-weight: var(--snappy-peso-bold);
+  color: var(--snappy-gris-texto);
+  line-height: var(--snappy-linea-titulo);
+  letter-spacing: -0.02em;
+}
+
+.subtitulo {
+  margin: 0 0 2rem;
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-normal);
+  color: var(--snappy-gris-secundario);
+}
+
+.seccion {
+  margin-bottom: 2rem;
+}
+
+.seccionTitulo {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-lg);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.tarjeta {
+  background: var(--snappy-blanco);
+  border-radius: var(--snappy-radio);
+  box-shadow: var(--snappy-sombra-tarjeta);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.campo {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-sm);
+}
+
+.campo:last-child {
+  margin-bottom: 0;
+}
+
+.campoEtiqueta {
+  display: block;
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-secundario);
+  margin-bottom: 0.25rem;
+  font-size: var(--snappy-texto-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0.3rem 0.65rem;
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+  border-radius: var(--snappy-radio-pequeño);
+}
+
+.opcionTitulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--snappy-texto-lg);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.opcionTexto {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-normal);
+  color: var(--snappy-gris-secundario);
+  line-height: var(--snappy-linea);
+}
+
+.boton {
+  padding: 0.7rem 1.25rem;
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+  border: none;
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  transition: background-color var(--snappy-transicion);
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--snappy-rojo-hover);
+}
+
+.boton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.formNegocio {
+  margin-top: 1rem;
+}
+
+.etiqueta {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.campoInput {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-base);
+  font-family: var(--snappy-fuente);
+  color: var(--snappy-gris-texto);
+  background: var(--snappy-blanco);
+  transition: border-color var(--snappy-transicion), box-shadow var(--snappy-transicion);
+}
+
+.campoInput:focus {
+  outline: none;
+  border-color: var(--snappy-rojo-principal);
+  box-shadow: var(--snappy-sombra-focus);
+}
+
+.botonesForm {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.botonSecundario {
+  padding: 0.7rem 1.25rem;
+  background: transparent;
+  color: var(--snappy-gris-secundario);
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-medio);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  transition: background-color var(--snappy-transicion), border-color var(--snappy-transicion);
+}
+
+.botonSecundario:hover:not(:disabled) {
+  background: var(--snappy-gris-claro);
+  border-color: var(--snappy-gris-borde);
+}
+
+.mensajeError {
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: #fef2f2;
+  color: var(--snappy-rojo-principal);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-medio);
+  border-radius: var(--snappy-radio-pequeño);
+}

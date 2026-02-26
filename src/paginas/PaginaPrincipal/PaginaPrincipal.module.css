@@ -1,0 +1,102 @@
+.contenedor {
+  min-height: calc(100vh - 64px);
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--snappy-rojo-principal) 0%, var(--snappy-rojo-oscuro) 100%);
+  color: var(--snappy-blanco);
+  padding: 3rem 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 60%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.05);
+  transform: rotate(15deg);
+  pointer-events: none;
+}
+
+.heroContenido {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroTitulo {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: var(--snappy-peso-bold);
+  line-height: var(--snappy-linea-titulo);
+  letter-spacing: -0.03em;
+}
+
+.heroDestacado {
+  display: inline-block;
+  padding: 0 0.2em;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+.heroTexto {
+  margin: 0;
+  font-size: var(--snappy-texto-lg);
+  font-weight: var(--snappy-peso-normal);
+  opacity: 0.95;
+  max-width: 520px;
+  line-height: var(--snappy-linea);
+}
+
+.heroAcciones {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.botonSecundario,
+.botonTerciario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.3rem;
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  text-decoration: none;
+  transition: background-color var(--snappy-transicion), color var(--snappy-transicion),
+    transform var(--snappy-transicion), box-shadow var(--snappy-transicion);
+}
+
+.botonSecundario {
+  background: var(--snappy-blanco);
+  color: var(--snappy-rojo-principal);
+  box-shadow: 0 4px 16px var(--snappy-sombra);
+}
+
+.botonSecundario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--snappy-sombra-fuerte);
+}
+
+.botonTerciario {
+  background: transparent;
+  color: var(--snappy-blanco);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.botonTerciario:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.contenido {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}

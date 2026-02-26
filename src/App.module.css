@@ -1,0 +1,4 @@
+/* Contenedor principal: la barra ya es sticky, el main ocupa el resto */
+.contenedorPrincipal {
+  min-height: calc(100vh - 64px);
+}

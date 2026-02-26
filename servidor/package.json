@@ -1,0 +1,19 @@
+{
+  "name": "snappy-servidor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "iniciar": "node index.js",
+    "iniciar:dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mercadopago": "^2.12.0",
+    "multer": "^2.0.2",
+    "pg": "^8.11.3"
+  }
+}

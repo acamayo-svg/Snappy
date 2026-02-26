@@ -1,0 +1,366 @@
+.contenedor {
+  min-height: calc(100vh - 64px);
+}
+
+.banner {
+  background: linear-gradient(135deg, var(--snappy-rojo-principal) 0%, var(--snappy-rojo-oscuro) 100%);
+  color: var(--snappy-blanco);
+  padding: 2.5rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.bannerContenido {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.titulo {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: var(--snappy-peso-bold);
+  letter-spacing: -0.02em;
+  line-height: var(--snappy-linea-titulo);
+}
+
+.subtitulo {
+  margin: 0 0 1.25rem;
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-normal);
+  opacity: 0.95;
+  max-width: 520px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+}
+
+.contenido {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2rem;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.tarjeta {
+  background: var(--snappy-blanco);
+  border-radius: var(--snappy-radio);
+  padding: 1.75rem;
+  box-shadow: var(--snappy-sombra-tarjeta);
+  transition: transform var(--snappy-transicion), box-shadow var(--snappy-transicion);
+}
+
+.tarjeta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--snappy-sombra-fuerte);
+}
+
+.tarjetaIcono {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.tarjetaTitulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--snappy-texto-lg);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.tarjetaTexto {
+  margin: 0;
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-normal);
+  color: var(--snappy-gris-secundario);
+  line-height: var(--snappy-linea);
+}
+
+.seccionRegistro {
+  margin-top: 2.5rem;
+}
+
+.cajaRegistro {
+  background: linear-gradient(135deg, var(--snappy-rojo-principal) 0%, var(--snappy-rojo-oscuro) 100%);
+  color: var(--snappy-blanco);
+  border-radius: var(--snappy-radio);
+  padding: 2rem;
+  box-shadow: 0 8px 24px var(--snappy-sombra);
+}
+
+.tituloRegistro {
+  margin: 0 0 0.75rem;
+  font-size: var(--snappy-texto-xl);
+  font-weight: var(--snappy-peso-bold);
+}
+
+.textoRegistro {
+  margin: 0 0 1.5rem;
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-normal);
+  line-height: var(--snappy-linea);
+  opacity: 0.95;
+  max-width: 560px;
+}
+
+.botonesRegistro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.botonPrincipal {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--snappy-blanco);
+  color: var(--snappy-rojo-principal);
+  font-weight: var(--snappy-peso-semibold);
+  font-size: var(--snappy-texto-base);
+  font-family: var(--snappy-fuente);
+  border-radius: var(--snappy-radio-input);
+  transition: transform var(--snappy-transicion), box-shadow var(--snappy-transicion);
+}
+
+.botonPrincipal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.botonSecundario {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--snappy-blanco);
+  font-weight: var(--snappy-peso-semibold);
+  font-size: var(--snappy-texto-base);
+  font-family: var(--snappy-fuente);
+  border-radius: var(--snappy-radio-input);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: background-color var(--snappy-transicion), border-color var(--snappy-transicion);
+}
+
+.botonSecundario:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: var(--snappy-blanco);
+}
+
+.estadoRegistro {
+  padding-top: 0.25rem;
+}
+
+.textoEstado {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+.enlaceCuenta {
+  color: var(--snappy-blanco);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.enlaceCuenta:hover {
+  opacity: 0.9;
+}
+
+/* Dashboard establecimiento */
+.dashboardSeccion {
+  margin-bottom: 2.5rem;
+}
+
+.dashboardTitulo {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-xl);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.cajaDashboard {
+  background: var(--snappy-blanco);
+  border-radius: var(--snappy-radio);
+  box-shadow: var(--snappy-sombra-tarjeta);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tablaProductos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tablaProductos th,
+.tablaProductos td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--snappy-gris-borde);
+}
+
+.tablaProductos th {
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tablaProductos td {
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-texto);
+}
+
+.tablaProductos tr:last-child td {
+  border-bottom: none;
+}
+
+.tablaProductos .precioCelda {
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-rojo-oscuro);
+}
+
+.accionesCelda {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.botonIcono {
+  padding: 0.4rem 0.6rem;
+  border: none;
+  border-radius: var(--snappy-radio-pequeño);
+  background: var(--snappy-gris-claro);
+  color: var(--snappy-gris-secundario);
+  font-size: var(--snappy-texto-sm);
+  cursor: pointer;
+  transition: background-color var(--snappy-transicion), color var(--snappy-transicion);
+}
+
+.botonIcono:hover {
+  background: var(--snappy-gris-borde);
+  color: var(--snappy-gris-texto);
+}
+
+.botonIconoPeligro:hover {
+  background: #fef2f2;
+  color: var(--snappy-rojo-principal);
+}
+
+.formProducto {
+  display: grid;
+  gap: 1rem;
+  max-width: 480px;
+}
+
+.formProducto .etiqueta {
+  display: block;
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+  margin-bottom: 0.35rem;
+}
+
+.formProducto .campoInput {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-base);
+  font-family: var(--snappy-fuente);
+}
+
+.formProducto .campoInput:focus {
+  outline: none;
+  border-color: var(--snappy-rojo-principal);
+  box-shadow: var(--snappy-sombra-focus);
+}
+
+.formProducto textarea.campoInput {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.botonesFormProducto {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.botonGuardar {
+  padding: 0.65rem 1.25rem;
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+  border: none;
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  transition: background-color var(--snappy-transicion);
+}
+
+.botonGuardar:hover:not(:disabled) {
+  background: var(--snappy-rojo-hover);
+}
+
+.botonGuardar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.botonCancelar {
+  padding: 0.65rem 1.25rem;
+  background: transparent;
+  color: var(--snappy-gris-secundario);
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-sm);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  transition: background-color var(--snappy-transicion), border-color var(--snappy-transicion);
+}
+
+.botonCancelar:hover {
+  background: var(--snappy-gris-claro);
+}
+
+.botonAgregar {
+  padding: 0.6rem 1.2rem;
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+  border: none;
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background-color var(--snappy-transicion);
+}
+
+.botonAgregar:hover {
+  background: var(--snappy-rojo-hover);
+}
+
+.mensajeErrorProducto {
+  padding: 0.65rem 0.85rem;
+  background: #fef2f2;
+  color: var(--snappy-rojo-principal);
+  font-size: var(--snappy-texto-sm);
+  border-radius: var(--snappy-radio-pequeño);
+  margin-bottom: 1rem;
+}
+
+.listaVacia {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--snappy-gris-secundario);
+  font-size: var(--snappy-texto-sm);
+}

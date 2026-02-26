@@ -1,0 +1,5 @@
+Coloca aquí los recursos de Snappy:
+- logo-snappy.png (logo de la marca)
+- Imágenes de productos, banners o establecimientos que quieras usar en la app.
+
+Las rutas en la app usan /recursos/nombre-archivo.png

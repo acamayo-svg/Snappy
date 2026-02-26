@@ -1,0 +1,572 @@
+.contenedor {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 0 1.5rem;
+  background-color: var(--snappy-rojo-principal);
+  box-shadow: 0 2px 12px var(--snappy-sombra);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--snappy-blanco);
+  font-weight: var(--snappy-peso-bold);
+  font-size: var(--snappy-texto-xl);
+  letter-spacing: -0.03em;
+  transition: opacity var(--snappy-transicion);
+}
+
+.logo:hover {
+  opacity: 0.95;
+}
+
+.iconoLogo {
+  display: flex;
+  width: 80px;
+  height: 65px;
+  flex-shrink: 0;
+}
+
+.iconoLogo svg,
+.iconoLogo .imagenLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.textoLogo {
+  font-style: italic;
+}
+
+.navegacion {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Reflejo diagonal animado (shine) - base para pseudo-elemento */
+.enlace,
+.enlaceActivo,
+.rol,
+.botonRol,
+.botonCarritoIcono,
+.botonCerrar,
+.enlaceLogin,
+.botonRegistro {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.35s ease, border-color 0.35s ease, transform 0.25s ease;
+}
+
+.enlace::before,
+.enlaceActivo::before,
+.rol::before,
+.botonRol::before,
+.botonCarritoIcono::before,
+.botonCerrar::before,
+.enlaceLogin::before,
+.botonRegistro::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform: translateX(-100%) rotate(25deg);
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.enlace:hover::before,
+.enlaceActivo:focus-visible::before,
+.rol:hover::before,
+.botonCerrar:hover:not(:disabled)::before,
+.enlaceLogin:hover::before,
+.botonRegistro:hover::before {
+  transform: translateX(100%) rotate(25deg);
+}
+
+.enlace,
+.enlaceActivo {
+  padding: 0.5rem 1rem;
+  border-radius: var(--snappy-radio-pequeño);
+  color: var(--snappy-blanco);
+  font-weight: var(--snappy-peso-medio);
+  font-size: var(--snappy-texto-sm);
+  z-index: 1;
+}
+
+.enlace:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.enlace:active,
+.enlaceActivo:active {
+  transform: scale(0.98);
+}
+
+.enlaceActivo {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: var(--snappy-peso-semibold);
+}
+
+/* Rol actual (Cliente, etc.) y selector de rol: efecto glass elegante */
+.rol,
+.botonRol {
+  padding: 0.45rem 0.9rem;
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  color: var(--snappy-blanco);
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--snappy-radio-pequeño);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.02em;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.rol {
+  display: inline-flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.rol:active {
+  transform: scale(0.98);
+}
+
+.conmutadorRol {
+  position: relative;
+  margin-right: 0.25rem;
+}
+
+.botonRol {
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.25s ease,
+    filter 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.botonRol:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.botonRol:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.65),
+    0 12px 30px rgba(0, 0, 0, 0.32);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.botonRolEtiqueta {
+  position: relative;
+  z-index: 1;
+}
+
+.botonRolIcono {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.botonRolIcono svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.menuRol {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 180px;
+  padding: 0.35rem 0.25rem;
+  border-radius: var(--snappy-radio-pequeño);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  animation: menuRolFadeIn 0.18s ease-out;
+  z-index: 30;
+}
+
+.menuRolOpcion {
+  border: none;
+  background: transparent;
+  color: #161616; /* texto negro/dark para opciones no seleccionadas */
+  text-align: left;
+  padding: 0.45rem 0.7rem;
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-medio);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.menuRolOpcion:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateX(2px);
+}
+
+.menuRolOpcionActiva {
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco); /* texto blanco para la opción seleccionada */
+  font-weight: var(--snappy-peso-semibold);
+}
+
+@keyframes menuRolFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.botonCarritoIcono {
+  cursor: pointer;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--snappy-blanco);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition: background-color 0.35s ease, border-color 0.35s ease, transform 0.25s ease,
+    box-shadow 0.35s ease;
+}
+
+.botonCarritoIcono:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+.botonCarritoIcono:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+}
+
+.iconoCarritoSvg svg {
+  width: 22px;
+  height: 22px;
+}
+
+.badgeCarrito {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ffcf4a;
+  color: #5a2300;
+  font-size: 0.65rem;
+  font-weight: var(--snappy-peso-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px rgba(199, 16, 48, 0.9);
+}
+
+.panelCarrito {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(360px, 100%);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: -16px 0 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  z-index: 120;
+  animation: panelCarritoSlideIn 0.22s ease-out;
+}
+
+.panelCarritoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.panelCarritoTitulo {
+  margin: 0;
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.panelCarritoCerrar {
+  border: none;
+  background: transparent;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--snappy-gris-secundario);
+}
+
+.panelCarritoContenido {
+  flex: 1;
+  padding: 0.75rem 1.25rem;
+  overflow-y: auto;
+}
+
+.panelCarritoVacio {
+  margin: 0;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-secundario);
+}
+
+.panelCarritoLista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panelCarritoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.panelCarritoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.panelCarritoNombre {
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.panelCarritoCantidad {
+  font-size: var(--snappy-texto-xs);
+  color: var(--snappy-gris-secundario);
+}
+
+.panelCarritoQuitar {
+  border: none;
+  background: transparent;
+  font-size: var(--snappy-texto-xs);
+  color: var(--snappy-rojo-principal);
+  cursor: pointer;
+}
+
+.panelCarritoError {
+  margin: 0 1.25rem 0.5rem;
+  padding: 0.5rem 0.6rem;
+  font-size: var(--snappy-texto-xs);
+  color: var(--snappy-rojo-principal);
+  background: rgba(199, 16, 48, 0.08);
+  border-radius: var(--snappy-radio-pequeño);
+}
+
+.panelCarritoFooter {
+  padding: 0.9rem 1.25rem 1.1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.panelCarritoTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-texto);
+}
+
+.panelCarritoTotal strong {
+  font-size: var(--snappy-texto-base);
+}
+
+.panelCarritoAcciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.panelCarritoVaciar,
+.panelCarritoPagar {
+  flex: 1;
+  padding: 0.55rem 0.6rem;
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  border: none;
+}
+
+.panelCarritoVaciar {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--snappy-gris-texto);
+}
+
+.panelCarritoPagar {
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+}
+
+.panelCarritoPagar:disabled,
+.panelCarritoVaciar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes panelCarritoSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Botón Cerrar sesión: transparente con borde + reflejo */
+.botonCerrar {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: var(--snappy-radio-pequeño);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--snappy-blanco);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-medio);
+  font-family: var(--snappy-fuente);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  z-index: 1;
+}
+
+.botonCerrar:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.botonCerrar:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.botonCerrar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Iniciar sesión: glass + reflejo diagonal */
+.enlaceLogin {
+  padding: 0.5rem 1rem;
+  border-radius: var(--snappy-radio-pequeño);
+  color: var(--snappy-blanco);
+  font-weight: var(--snappy-peso-medio);
+  font-size: var(--snappy-texto-sm);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  z-index: 1;
+}
+
+.enlaceLogin:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.enlaceLogin:active {
+  transform: scale(0.98);
+}
+
+.botonRegistro {
+  padding: 0.5rem 1rem;
+  border-radius: var(--snappy-radio-pequeño);
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--snappy-blanco);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font-weight: var(--snappy-peso-semibold);
+  font-size: var(--snappy-texto-sm);
+  font-family: var(--snappy-fuente);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  z-index: 1;
+}
+
+.botonRegistro:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.botonRegistro:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .contenedor {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .navegacion {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .enlace,
+  .enlaceActivo {
+    padding: 0.4rem 0.75rem;
+    font-size: var(--snappy-texto-xs);
+  }
+}

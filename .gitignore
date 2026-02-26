@@ -1,0 +1,26 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca subir claves ni contraseñas)
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+build/
+
+# Logs y caché
+*.log
+npm-debug.log*
+.cache
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Uploads generados por la app (opcional: quitar si quieres versionar imágenes subidas)
+servidor/public/uploads/*
+!servidor/public/uploads/.gitkeep

@@ -1,0 +1,40 @@
+@import './variables.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--snappy-fuente);
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-normal);
+  line-height: var(--snappy-linea);
+  color: var(--snappy-gris-texto);
+  background-color: var(--snappy-fondo);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+#raiz {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
