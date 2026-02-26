@@ -24,6 +24,9 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, mensaje: 'API Snappy' })
 })
+app.get('/', (req, res) => {
+  res.redirect(302, '/api/health')
+})
 
 let dbInicializada = false
 app.use(async (req, res, next) => {

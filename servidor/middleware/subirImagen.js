@@ -5,11 +5,15 @@ import { fileURLToPath } from 'url'
 import { randomUUID } from 'crypto'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const esVercel = process.env.VERCEL === '1'
-// En Vercel el sistema de archivos es de solo lectura; usar /tmp para subidas o no crear carpeta
-const directorioUploads = esVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'public', 'uploads')
+// En Vercel/serverless (/var/task) el sistema de archivos es de solo lectura: no crear carpetas ahí, usar /tmp
+const pareceServerless = process.env.VERCEL === '1' || process.env.VERCEL === 'true' || String(process.env.VERCEL || '').length > 0 || __dirname.startsWith('/var/task')
+function getDirectorioUploads() {
+  return pareceServerless ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'public', 'uploads')
+}
+const directorioUploads = getDirectorioUploads()
 
-if (!esVercel && !fs.existsSync(directorioUploads)) {
+// No crear carpetas al cargar el módulo: en serverless /var/task es solo lectura y falla mkdir
+if (!pareceServerless && !fs.existsSync(directorioUploads)) {
   fs.mkdirSync(directorioUploads, { recursive: true })
 }
 
@@ -18,10 +22,11 @@ const tiposMimePermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp
 
 const almacenamiento = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    if (esVercel && !fs.existsSync(directorioUploads)) {
-      try { fs.mkdirSync(directorioUploads, { recursive: true }) } catch (_) {}
+    const dir = getDirectorioUploads()
+    if (pareceServerless && !fs.existsSync(dir)) {
+      try { fs.mkdirSync(dir, { recursive: true }) } catch (_) {}
     }
-    cb(null, directorioUploads)
+    cb(null, dir)
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname) || '.jpg'
