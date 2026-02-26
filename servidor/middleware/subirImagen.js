@@ -46,7 +46,8 @@ const filtroArchivo = (req, file, cb) => {
   }
 }
 
-const TAMANO_MAXIMO_MB = 30
+// Vercel serverless tiene límite ~4.5 MB por petición; usar 4 MB para estar seguros
+const TAMANO_MAXIMO_MB = 4
 export const subirImagenProducto = multer({
   storage: almacenamiento,
   fileFilter: filtroArchivo,

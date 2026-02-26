@@ -269,6 +269,12 @@ function PaginaEstablecimiento() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0]
                       if (!file) return
+                      const maxBytes = 4 * 1024 * 1024 // 4 MB (límite en Vercel)
+                      if (file.size > maxBytes) {
+                        setError(`La imagen no debe superar 4 MB (tiene ${(file.size / 1024 / 1024).toFixed(1)} MB). Comprímela o elige otra.`)
+                        e.target.value = ''
+                        return
+                      }
                       setSubiendoImagen(true)
                       setError(null)
                       try {
@@ -284,7 +290,7 @@ function PaginaEstablecimiento() {
                     disabled={cargando || subiendoImagen}
                   />
                   <span style={{ fontSize: 'var(--snappy-texto-xs)', color: 'var(--snappy-gris-secundario)', marginTop: '0.25rem', display: 'block' }}>
-                    JPEG, PNG, GIF o WebP. Máximo 30 MB. Se verá en la tarjeta del producto.
+                    JPEG, PNG, GIF o WebP. Máximo 4 MB. Se verá en la tarjeta del producto.
                   </span>
                   {subiendoImagen && (
                     <span style={{ fontSize: 'var(--snappy-texto-sm)', color: 'var(--snappy-gris-secundario)', marginTop: '0.5rem', display: 'block' }}>
