@@ -3,7 +3,7 @@
  * Respuesta: { token, usuario: { id, email, nombre, roles } }
  */
 
-const URL_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
 function obtenerToken() {
   return sessionStorage.getItem('snappy_token')

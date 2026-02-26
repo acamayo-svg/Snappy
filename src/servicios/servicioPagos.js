@@ -2,7 +2,7 @@
  * Servicio de pagos: crea preferencia en el backend y devuelve URL de Mercado Pago (Checkout Pro).
  */
 
-const URL_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
 /**
  * @param {Array<{ title: string, quantity: number, unit_price: number }>} items
