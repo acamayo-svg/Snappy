@@ -92,8 +92,11 @@ router.post('/subir-imagen', verificarToken, subirImagenProducto.single('imagen'
   if (!req.file) {
     return res.status(400).json({ mensaje: 'Debes enviar un archivo de imagen (campo "imagen")' })
   }
-  const baseUrl = process.env.URL_SERVIDOR || `http://localhost:${process.env.PUERTO || 3000}`
-  const url = `${baseUrl}/uploads/${req.file.filename}`
+  const baseUrl = process.env.URL_SERVIDOR ||
+    (process.env.VERCEL && process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
+      : `http://localhost:${process.env.PUERTO || 3000}`)
+  const url = `${baseUrl.replace(/\/$/, '')}/uploads/${req.file.filename}`
   res.status(201).json({ url })
 })
 
