@@ -44,8 +44,8 @@ export async function crearPreferencia(items, backUrls = {}) {
   const body = {
     items: items.map((item) => ({
       title: item.title,
-      quantity: Number(item.quantity) || 1,
-      unit_price: Number(item.unit_price) || 0,
+      quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+      unit_price: Math.round(Number(item.unit_price) || 0),
       currency_id: 'COP',
     })),
     back_urls: {
