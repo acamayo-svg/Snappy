@@ -9,7 +9,7 @@ const router = Router()
  */
 router.post('/preferencia', async (req, res) => {
   try {
-    const { items } = req.body
+    const { items, payer } = req.body
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ mensaje: 'Se requiere un array "items" con al menos un producto.' })
     }
@@ -20,8 +20,14 @@ router.post('/preferencia', async (req, res) => {
       })
     }
 
+    const baseUrl = process.env.URL_SERVIDOR ||
+      (process.env.VERCEL && process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
+        : `http://localhost:${process.env.PUERTO || 3000}`)
+    const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/pagos/webhook`
+
     const { crearPreferencia } = await import('../mercadoPago.js')
-    const { url } = await crearPreferencia(items)
+    const { url } = await crearPreferencia(items, {}, payer || {}, webhookUrl)
     if (!url) {
       return res.status(502).json({ mensaje: 'No se pudo obtener la URL de pago de Mercado Pago.' })
     }

@@ -36,10 +36,12 @@ export async function obtenerPago(paymentId) {
 /**
  * Crea una preferencia de pago (Checkout Pro) y devuelve la URL para redirigir al usuario.
  * @param {Array<{ title: string, quantity: number, unit_price: number }>} items
- * @param {{ success: string, failure: string, pending: string }} backUrls - URLs de retorno
+ * @param {{ success?: string, failure?: string, pending?: string }} backUrls - URLs de retorno
+ * @param {{ email?: string }} payer - opcional; en sandbox a veces ayuda indicar el payer
+ * @param {string} [webhookUrl] - URL de notificaciones (si no se pasa, MP usa la del panel)
  * @returns {Promise<{ url: string }>} url es init_point o sandbox_init_point
  */
-export async function crearPreferencia(items, backUrls = {}) {
+export async function crearPreferencia(items, backUrls = {}, payer = {}, webhookUrl) {
   const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
   const body = {
     items: items.map((item) => ({
@@ -54,6 +56,8 @@ export async function crearPreferencia(items, backUrls = {}) {
       pending: backUrls.pending ?? `${baseUrl}/cliente?pago=pending`,
     },
     auto_return: 'approved',
+    ...(webhookUrl && { notification_url: webhookUrl }),
+    ...(payer?.email && { payer: { email: payer.email } }),
   }
 
   const response = await preferenceClient.create({ body })

@@ -32,7 +32,8 @@ function BarraMenu() {
         quantity: item.cantidad,
         unit_price: item.precio || 0,
       }))
-      const { url } = await crearPreferenciaPagoApi(body)
+      const payer = usuario?.email ? { email: usuario.email } : undefined
+      const { url } = await crearPreferenciaPagoApi(body, payer)
       if (url) window.location.href = url
       else setErrorPago('No se obtuvo la URL de pago.')
     } catch (e) {
