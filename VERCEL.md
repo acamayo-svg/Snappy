@@ -41,6 +41,11 @@ En Vercel se configuran **dos proyectos**: uno para el **frontend** (React/Vite)
    - `MP_ACCESS_TOKEN` – tu Access Token de Mercado Pago (prueba o producción).
    - `FRONTEND_URL` – URL del front en Vercel, ej. `https://snappy-xxx.vercel.app` (sin barra final)  
      (para CORS y `back_urls` de Mercado Pago).
+   - **Cloudinary** (recomendado para que las imágenes de productos se vean siempre en producción):
+     - `CLOUDINARY_CLOUD_NAME` – nombre de tu nube (panel de [Cloudinary](https://cloudinary.com)).
+     - `CLOUDINARY_API_KEY` – API Key.
+     - `CLOUDINARY_API_SECRET` – API Secret.  
+     Si estas tres variables están definidas, las imágenes de productos se suben a Cloudinary y la URL que se guarda es la de Cloudinary (persistente). Si no, se usa disco local/`/tmp` (en Vercel las imágenes pueden no verse entre peticiones).
 4. **Deploy.**  
    La API quedará en una URL tipo: `https://snappy-servidor-xxx.vercel.app`.
 

@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import { obtenerConexion } from '../config/basedatos.js'
 import { verificarToken } from '../middleware/verificarToken.js'
-import { subirImagenProducto, TAMANO_MAXIMO_IMAGEN_MB } from '../middleware/subirImagen.js'
+import { subirImagenProducto, subirImagenProductoMemoria, TAMANO_MAXIMO_IMAGEN_MB } from '../middleware/subirImagen.js'
+import { subirImagenCloudinary, estaConfiguradoCloudinary } from '../config/cloudinary.js'
 
 const router = Router()
 
@@ -87,16 +88,28 @@ router.get('/mis-productos', verificarToken, async (req, res) => {
   }
 })
 
-/** Subir imagen de producto (establecimiento). Devuelve { url } para guardar en el producto */
-router.post('/subir-imagen', verificarToken, subirImagenProducto.single('imagen'), (req, res) => {
+/** Subir imagen de producto. Si Cloudinary está configurado, sube ahí; si no, guarda en disco/local. */
+const middlewareSubirImagen = estaConfiguradoCloudinary()
+  ? subirImagenProductoMemoria.single('imagen')
+  : subirImagenProducto.single('imagen')
+
+router.post('/subir-imagen', verificarToken, middlewareSubirImagen, async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ mensaje: 'Debes enviar un archivo de imagen (campo "imagen")' })
   }
-  const baseUrl = process.env.URL_SERVIDOR ||
-    (process.env.VERCEL && process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
-      : `http://localhost:${process.env.PUERTO || 3000}`)
-  const url = `${baseUrl.replace(/\/$/, '')}/uploads/${req.file.filename}`
+  let url
+  if (estaConfiguradoCloudinary() && req.file.buffer) {
+    url = await subirImagenCloudinary(req.file.buffer, req.file.mimetype)
+    if (!url) {
+      return res.status(502).json({ mensaje: 'Error al subir la imagen a Cloudinary. Revisa la configuración.' })
+    }
+  } else {
+    const baseUrl = process.env.URL_SERVIDOR ||
+      (process.env.VERCEL && process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
+        : `http://localhost:${process.env.PUERTO || 3000}`)
+    url = `${baseUrl.replace(/\/$/, '')}/uploads/${req.file.filename}`
+  }
   res.status(201).json({ url })
 })
 

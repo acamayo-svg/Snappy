@@ -48,9 +48,18 @@ const filtroArchivo = (req, file, cb) => {
 
 // Vercel serverless tiene límite ~4.5 MB por petición; usar 4 MB para estar seguros
 const TAMANO_MAXIMO_MB = 4
+const limiteBytes = TAMANO_MAXIMO_MB * 1024 * 1024
+
 export const subirImagenProducto = multer({
   storage: almacenamiento,
   fileFilter: filtroArchivo,
-  limits: { fileSize: TAMANO_MAXIMO_MB * 1024 * 1024 },
+  limits: { fileSize: limiteBytes },
 })
 export const TAMANO_MAXIMO_IMAGEN_MB = TAMANO_MAXIMO_MB
+
+/** Multer en memoria (para subir luego a Cloudinary). Mismo límite y filtro. */
+export const subirImagenProductoMemoria = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: filtroArchivo,
+  limits: { fileSize: limiteBytes },
+})
