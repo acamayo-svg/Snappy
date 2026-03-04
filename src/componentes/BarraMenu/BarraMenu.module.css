@@ -275,6 +275,7 @@
   border: none;
   background: transparent;
   transition: transform 0.2s ease;
+  overflow: visible;
 }
 
 .botonCarritoIcono:hover {
@@ -318,20 +319,22 @@
 
 .badgeCarrito {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  min-width: 22px;
-  height: 22px;
+  top: -8px;
+  right: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
   border-radius: 999px;
-  background: #ffe66d;
-  color: #5a2300;
-  font-size: 0.7rem;
+  background: #ffd43b;
+  color: #2d1b00;
+  font-size: 0.75rem;
   font-weight: var(--snappy-peso-bold);
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 2px rgba(199, 16, 48, 0.9);
-  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  z-index: 10;
 }
 
 .panelCarrito {
