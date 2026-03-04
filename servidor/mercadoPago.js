@@ -57,7 +57,8 @@ export async function crearPreferencia(items, backUrls = {}, payer = {}, webhook
     },
     auto_return: 'approved',
     ...(webhookUrl && { notification_url: webhookUrl }),
-    ...(payer?.email && { payer: { email: payer.email } }),
+    // No enviar payer: en sandbox el comprador debe ser el usuario de prueba que inicia sesión en el checkout.
+    // Si enviamos otro email (ej. usuario Snappy), MP puede rechazar la tokenización de la tarjeta.
   }
 
   const response = await preferenceClient.create({ body })

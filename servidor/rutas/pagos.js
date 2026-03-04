@@ -9,7 +9,7 @@ const router = Router()
  */
 router.post('/preferencia', async (req, res) => {
   try {
-    const { items, payer } = req.body
+    const { items } = req.body
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ mensaje: 'Se requiere un array "items" con al menos un producto.' })
     }
@@ -27,7 +27,7 @@ router.post('/preferencia', async (req, res) => {
     const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/pagos/webhook`
 
     const { crearPreferencia } = await import('../mercadoPago.js')
-    const { url } = await crearPreferencia(items, {}, payer || {}, webhookUrl)
+    const { url } = await crearPreferencia(items, {}, {}, webhookUrl)
     if (!url) {
       return res.status(502).json({ mensaje: 'No se pudo obtener la URL de pago de Mercado Pago.' })
     }
