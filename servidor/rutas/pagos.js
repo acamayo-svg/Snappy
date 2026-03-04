@@ -35,7 +35,8 @@ router.post('/preferencia', async (req, res) => {
     res.json({ url })
   } catch (err) {
     console.error('Error al crear preferencia Mercado Pago:', err)
-    res.status(500).json({
+    const status = err?.code === 'MP_SANDBOX_CREDENTIALS' ? 503 : 500
+    res.status(status).json({
       mensaje: err?.message ?? 'Error al crear la preferencia de pago.',
     })
   }

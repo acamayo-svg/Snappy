@@ -38,7 +38,8 @@ En Vercel se configuran **dos proyectos**: uno para el **frontend** (React/Vite)
    - `DB_USER` – usuario de la base.
    - `DB_PASSWORD` – contraseña.
    - `JWT_CLAVE` – la misma que usas en local.
-   - `MP_ACCESS_TOKEN` – tu Access Token de Mercado Pago (prueba o producción).
+   - `MP_ACCESS_TOKEN` – Access Token de Mercado Pago. **Para pruebas**: usa el de **Credenciales de prueba** (Tus integraciones > Pruebas > Credenciales de prueba). En Colombia puede ser APP_USR-...; lo importante es que sea el de la pestaña de prueba.
+   - Opcional: `MP_SANDBOX=true` – la API solo devuelve la URL de checkout de pruebas (sandbox_init_point).
    - `FRONTEND_URL` – URL del front en Vercel, ej. `https://snappy-xxx.vercel.app` (sin barra final)  
      (para CORS y `back_urls` de Mercado Pago).
    - **Cloudinary** (recomendado para que las imágenes de productos se vean siempre en producción):
@@ -62,7 +63,27 @@ Vuelve a desplegar el frontend para que el build use la nueva variable.
 
 ---
 
-## 4. Webhook de Mercado Pago
+## 4. Mercado Pago: pruebas (sandbox)
+
+Para que el pago con tarjeta de prueba funcione en el checkout:
+
+1. **Credenciales de prueba**  
+   En [Tus integraciones](https://www.mercadopago.com.co/developers/panel/app) → tu aplicación → **Pruebas** → **Credenciales de prueba**. Copia el **Access Token** y úsalo en `MP_ACCESS_TOKEN` (en Colombia puede ser APP_USR-...; lo importante es que sea el de esa pestaña).
+
+2. **Usuario de prueba (importante)**  
+   En **Datos de las credenciales de prueba** verás **Usuario de prueba** (ej. TESTUSER...) y **Contraseña**. Cuando te redirija al checkout de Mercado Pago, **inicia sesión con ese usuario y contraseña**, no con tu cuenta personal. Si no inicias sesión como usuario de prueba, el pago con tarjeta de prueba puede fallar.
+
+3. **Tarjetas de prueba**  
+   Ejemplo: Mastercard `5254 1336 7440 3564`, CVV `123`, vencimiento `11/30`, nombre cualquiera, documento `123456789`. Más en la [documentación de tarjetas de prueba](https://www.mercadopago.com.co/developers/es/docs/checkout-api/integration-test/test-cards).
+
+4. **Navegador**  
+   Prueba en una pestaña de incógnito para evitar caché o sesiones previas.
+
+Si ves "card-token apicall failed" o 404 en `card-form/association`: (1) Confirma que MP_ACCESS_TOKEN es el de **Credenciales de prueba**. (2) En el checkout de MP, inicia sesión con el **Usuario de prueba** (TESTUSER...) y contraseña de la misma sección. (3) Prueba en incógnito y con tarjeta de prueba oficial.
+
+---
+
+## 5. Webhook de Mercado Pago
 
 En el panel de Mercado Pago → **Webhooks**, configura la URL de notificaciones con la URL pública de tu API:
 
@@ -72,7 +93,7 @@ En el panel de Mercado Pago → **Webhooks**, configura la URL de notificaciones
 
 ---
 
-## 5. Base de datos
+## 6. Base de datos
 
 Vercel **no** ofrece PostgreSQL. Necesitas una base accesible por internet, por ejemplo:
 

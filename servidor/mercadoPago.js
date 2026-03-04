@@ -1,6 +1,10 @@
 /**
  * Mercado Pago: inicialización del SDK con credenciales de prueba/producción.
  * Usa en el backend para gestionar preferencias de pago (Checkout Pro).
+ *
+ * Para pruebas: MP_ACCESS_TOKEN debe ser el de "Credenciales de prueba"
+ * (Tus integraciones > Pruebas > Credenciales de prueba). En Colombia ese token
+ * también puede empezar por APP_USR-; lo importante es que sea el de la pestaña de prueba.
  */
 import { createRequire } from 'node:module'
 
@@ -8,6 +12,7 @@ const require = createRequire(import.meta.url)
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago')
 
 const accessToken = process.env.MP_ACCESS_TOKEN || ''
+const sandboxOnly = process.env.MP_SANDBOX === 'true' || process.env.MP_SANDBOX === '1'
 
 const client = new MercadoPagoConfig({
   accessToken,
@@ -63,6 +68,21 @@ export async function crearPreferencia(items, backUrls = {}, payer = {}, webhook
 
   const response = await preferenceClient.create({ body })
   const data = response?.body ?? response
-  const url = data.sandbox_init_point || data.init_point || ''
+  const sandboxUrl = data.sandbox_init_point || ''
+  const prodUrl = data.init_point || ''
+
+  // Si MP_SANDBOX=true, solo devolver URL de pruebas. Si MP no devuelve sandbox_init_point, avisar.
+  if (sandboxOnly) {
+    if (sandboxUrl) {
+      return { url: sandboxUrl }
+    }
+    const err = new Error(
+      'Mercado Pago no devolvió sandbox_init_point. Comprueba que MP_ACCESS_TOKEN sea el de "Credenciales de prueba" (Tus integraciones > Pruebas).'
+    )
+    err.code = 'MP_SANDBOX_CREDENTIALS'
+    throw err
+  }
+
+  const url = sandboxUrl || prodUrl
   return { url }
 }
