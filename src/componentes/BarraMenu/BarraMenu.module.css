@@ -293,6 +293,31 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
 }
 
+.botonCarritoAgitado {
+  animation: carritoShake 0.6s ease-out;
+}
+
+@keyframes carritoShake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 .iconoCarritoSvg svg {
   width: 22px;
   height: 22px;
@@ -300,19 +325,19 @@
 
 .badgeCarrito {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
   border-radius: 999px;
-  background: #ffcf4a;
+  background: #ffe66d;
   color: #5a2300;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: var(--snappy-peso-bold);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 2px rgba(199, 16, 48, 0.9);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 
 .panelCarrito {

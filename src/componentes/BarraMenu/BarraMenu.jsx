@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import { useCarrito } from '../../contextos/ContextoCarrito'
@@ -20,7 +20,16 @@ function BarraMenu() {
   const [carritoAbierto, setCarritoAbierto] = useState(false)
   const [pagando, setPagando] = useState(false)
   const [errorPago, setErrorPago] = useState(null)
+  const [animarCarrito, setAnimarCarrito] = useState(false)
   const { totalItems, items, total, quitarDelCarrito, vaciarCarrito } = useCarrito()
+
+  useEffect(() => {
+    if (totalItems > 0) {
+      setAnimarCarrito(true)
+      const id = setTimeout(() => setAnimarCarrito(false), 600)
+      return () => clearTimeout(id)
+    }
+  }, [totalItems])
 
   const irAPagar = async () => {
     if (items.length === 0) return
@@ -70,7 +79,9 @@ function BarraMenu() {
         ))}
         <button
           type="button"
-          className={estilos.botonCarritoIcono}
+          className={`${estilos.botonCarritoIcono} ${
+            animarCarrito ? estilos.botonCarritoAgitado : ''
+          }`}
           onClick={() => setCarritoAbierto(true)}
           aria-label="Ver carrito"
         >

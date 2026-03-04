@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // 1x1 transparent GIF (evita CORB cuando la imagen no existe en serverless)
 const IMAGEN_404 = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
 const app = express()
-const puerto = parseInt(process.env.PUERTO || '3000', 10)
+const puerto = parseInt(process.env.PORT || process.env.PUERTO || '3000', 10)
 const esVercel = process.env.VERCEL === '1'
 
 app.use(cors({ origin: true, credentials: true }))
