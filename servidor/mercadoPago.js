@@ -50,13 +50,24 @@ export async function obtenerPago(paymentId) {
  */
 export async function crearPreferencia(items, backUrls = {}, payer = {}, webhookUrl) {
   const baseUrl = urlBaseFrontend()
-  const body = {
-    items: items.map((item) => ({
+
+  const itemsFiltrados = items
+    .filter((item) => Math.round(Number(item.unit_price) || 0) > 0)
+    .map((item) => ({
       title: item.title,
       quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
-      unit_price: Math.round(Number(item.unit_price) || 0),
+      unit_price: Math.round(Number(item.unit_price)),
       currency_id: 'COP',
-    })),
+    }))
+
+  if (itemsFiltrados.length === 0) {
+    const err = new Error('Ningún producto tiene precio válido para procesar el pago.')
+    err.code = 'MP_NO_ITEMS'
+    throw err
+  }
+
+  const body = {
+    items: itemsFiltrados,
     external_reference: randomUUID(),
     back_urls: {
       success: backUrls.success ?? `${baseUrl}/cliente?pago=ok`,

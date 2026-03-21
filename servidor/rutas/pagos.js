@@ -22,7 +22,9 @@ router.post('/preferencia', async (req, res) => {
     }
 
     const baseUrl = urlBaseServidor()
-    const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/pagos/webhook`
+    const webhookUrl = !baseUrl.includes('localhost')
+      ? `${baseUrl.replace(/\/$/, '')}/api/pagos/webhook`
+      : null
 
     const { crearPreferencia } = await import('../mercadoPago.js')
     const { url } = await crearPreferencia(items, {}, {}, webhookUrl)
@@ -33,7 +35,9 @@ router.post('/preferencia', async (req, res) => {
     res.json({ url })
   } catch (err) {
     console.error('Error al crear preferencia Mercado Pago:', err)
-    const status = err?.code === 'MP_SANDBOX_CREDENTIALS' ? 503 : 500
+    const status =
+      err?.code === 'MP_SANDBOX_CREDENTIALS' ? 503 :
+      err?.code === 'MP_NO_ITEMS' ? 400 : 500
     res.status(status).json({
       mensaje: err?.message ?? 'Error al crear la preferencia de pago.',
     })
