@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { urlBaseServidor } from '../config/urlPublica.js'
 
 const router = Router()
 
@@ -20,10 +21,7 @@ router.post('/preferencia', async (req, res) => {
       })
     }
 
-    const baseUrl = process.env.URL_SERVIDOR ||
-      (process.env.VERCEL && process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
-        : `http://localhost:${process.env.PUERTO || 3000}`)
+    const baseUrl = urlBaseServidor()
     const webhookUrl = `${baseUrl.replace(/\/$/, '')}/api/pagos/webhook`
 
     const { crearPreferencia } = await import('../mercadoPago.js')

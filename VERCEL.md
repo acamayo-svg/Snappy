@@ -117,6 +117,24 @@ Con esto ya tienes la configuración para usar Vercel con una URL pública para 
 
 ---
 
+## Backend en Render (front sigue en Vercel)
+
+1. **Variables en Render** (servicio del backend, carpeta `servidor`):
+   - `FRONTEND_URL` = URL exacta del front, ej. `https://snappy-xxx.vercel.app` (sin barra final). Mercado Pago usa esto en `back_urls` y debe ser **https**.
+   - `MP_ACCESS_TOKEN`, `MP_SANDBOX=true` en pruebas, base de datos, `JWT_CLAVE`, Cloudinary si aplica.
+   - Opcional: `URL_SERVIDOR` = misma URL pública que te da Render, ej. `https://snappy-api.onrender.com`, si quieres fijarla a mano. Si no la pones, la API usa **`RENDER_EXTERNAL_URL`** (Render la define sola) para el webhook y rutas que necesiten la URL del servidor.
+
+2. **Variables en Vercel** (solo frontend):
+   - `VITE_API_URL` = URL del backend en Render, ej. `https://snappy-api.onrender.com` (sin barra final). Vuelve a desplegar el front tras cambiarla.
+
+3. **Webhook en el panel de Mercado Pago**  
+   Debe coincidir con la URL real del API: `https://tu-servicio.onrender.com/api/pagos/webhook`.
+
+4. **CORS**  
+   El backend ya permite cualquier origen (`cors` con `origin: true`). El fallo “no completa el pago” no suele ser CORS: CORS solo afecta llamadas `fetch` desde el navegador a tu API; el checkout ocurre en dominios de Mercado Pago.
+
+---
+
 ## Si la API devuelve 500 (FUNCTION_INVOCATION_FAILED)
 
 1. **Probar ruta de diagnóstico**  

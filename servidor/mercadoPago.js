@@ -7,6 +7,8 @@
  * también puede empezar por APP_USR-; lo importante es que sea el de la pestaña de prueba.
  */
 import { createRequire } from 'node:module'
+import { randomUUID } from 'node:crypto'
+import { urlBaseFrontend } from './config/urlPublica.js'
 
 const require = createRequire(import.meta.url)
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago')
@@ -47,7 +49,7 @@ export async function obtenerPago(paymentId) {
  * @returns {Promise<{ url: string }>} url es init_point o sandbox_init_point
  */
 export async function crearPreferencia(items, backUrls = {}, payer = {}, webhookUrl) {
-  const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
+  const baseUrl = urlBaseFrontend()
   const body = {
     items: items.map((item) => ({
       title: item.title,
@@ -55,6 +57,7 @@ export async function crearPreferencia(items, backUrls = {}, payer = {}, webhook
       unit_price: Math.round(Number(item.unit_price) || 0),
       currency_id: 'COP',
     })),
+    external_reference: randomUUID(),
     back_urls: {
       success: backUrls.success ?? `${baseUrl}/cliente?pago=ok`,
       failure: backUrls.failure ?? `${baseUrl}/cliente?pago=error`,

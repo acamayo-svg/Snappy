@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { urlBaseServidor } from '../config/urlPublica.js'
 import { obtenerConexion } from '../config/basedatos.js'
 import { verificarToken } from '../middleware/verificarToken.js'
 import { subirImagenProducto, subirImagenProductoMemoria, TAMANO_MAXIMO_IMAGEN_MB } from '../middleware/subirImagen.js'
@@ -104,10 +105,7 @@ router.post('/subir-imagen', verificarToken, middlewareSubirImagen, async (req, 
       return res.status(502).json({ mensaje: 'Error al subir la imagen a Cloudinary. Revisa la configuración.' })
     }
   } else {
-    const baseUrl = process.env.URL_SERVIDOR ||
-      (process.env.VERCEL && process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, '')}`
-        : `http://localhost:${process.env.PUERTO || 3000}`)
+    const baseUrl = urlBaseServidor()
     url = `${baseUrl.replace(/\/$/, '')}/uploads/${req.file.filename}`
   }
   res.status(201).json({ url })
