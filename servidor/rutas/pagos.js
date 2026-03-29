@@ -305,6 +305,11 @@ router.post('/preferencia', verificarToken, async (req, res) => {
     const baseApi = urlBaseServidor().replace(/\/$/, '')
 
     const preferenceApi = new Preference(crearClienteMp())
+    // No prellenar `payer.email` salvo que MP_PREFILL_PAYER_EMAIL=1: en sandbox, un correo
+    // distinto al de la cuenta TESTUSER puede dejar el flujo de tarjeta en estado raro (p. ej. CVV no tokenizado).
+    const prefillPayer =
+      process.env.MP_PREFILL_PAYER_EMAIL === '1' && req.usuarioCorreo?.trim()
+
     const prefBody = {
       items: itemsMp,
       external_reference: String(externalRef),
@@ -316,7 +321,7 @@ router.post('/preferencia', verificarToken, async (req, res) => {
       },
       auto_return: 'approved',
       notification_url: `${baseApi}/api/pagos/webhook`,
-      payer: req.usuarioCorreo ? { email: req.usuarioCorreo } : undefined,
+      ...(prefillPayer ? { payer: { email: req.usuarioCorreo.trim() } } : {}),
     }
 
     const pref = await preferenceApi.create({ body: prefBody })
