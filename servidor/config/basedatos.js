@@ -115,6 +115,31 @@ export async function inicializarTabla() {
     if (tieneImagen.rows.length === 0) {
       await cliente.query(`ALTER TABLE productos ADD COLUMN imagen VARCHAR(500)`)
     }
+
+    await cliente.query(`
+      CREATE TABLE IF NOT EXISTS pedidos (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        establecimiento_id UUID NOT NULL REFERENCES establecimientos(id) ON DELETE CASCADE,
+        cliente_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
+        external_reference VARCHAR(80) NOT NULL UNIQUE,
+        estado VARCHAR(30) NOT NULL DEFAULT 'esperando_pago',
+        total NUMERIC(12, 2) NOT NULL CHECK (total >= 0),
+        items_json JSONB NOT NULL DEFAULT '[]',
+        mp_preference_id VARCHAR(80),
+        mp_payment_id VARCHAR(50),
+        mp_status VARCHAR(30),
+        creado_en TIMESTAMPTZ DEFAULT NOW(),
+        actualizado_en TIMESTAMPTZ DEFAULT NOW()
+      )
+    `)
+    await cliente.query(`
+      CREATE INDEX IF NOT EXISTS idx_pedidos_establecimiento
+      ON pedidos(establecimiento_id)
+    `)
+    await cliente.query(`
+      CREATE INDEX IF NOT EXISTS idx_pedidos_external_ref
+      ON pedidos(external_reference)
+    `)
   } finally {
     cliente.release()
   }

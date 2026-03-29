@@ -459,6 +459,22 @@
 
 .panelCarritoAcciones {
   display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.panelCarritoAviso {
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  font-size: var(--snappy-texto-xs);
+  color: var(--snappy-rojo-principal);
+  background: rgba(199, 16, 48, 0.08);
+  border-radius: var(--snappy-radio-pequeño);
+  line-height: 1.35;
+}
+
+.panelCarritoFilaBotones {
+  display: flex;
   gap: 0.5rem;
 }
 

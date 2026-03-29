@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import { useCarrito } from '../../contextos/ContextoCarrito'
+import { crearPreferenciaApi } from '../../servicios/servicioPagos'
 import estilos from './BarraMenu.module.css'
 
 const rutas = [
@@ -19,6 +20,8 @@ function BarraMenu() {
   const [carritoAbierto, setCarritoAbierto] = useState(false)
   const [animarCarrito, setAnimarCarrito] = useState(false)
   const { totalItems, items, total, quitarDelCarrito, vaciarCarrito } = useCarrito()
+  const [pagando, setPagando] = useState(false)
+  const [mensajePago, setMensajePago] = useState(null)
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -27,6 +30,37 @@ function BarraMenu() {
       return () => clearTimeout(id)
     }
   }, [totalItems])
+
+  async function irAPagarMercadoPago() {
+    setMensajePago(null)
+    if (!usuario) {
+      navegar('/login', { state: { desde: ubicacion.pathname } })
+      return
+    }
+    if (items.length === 0) return
+
+    const sinTienda = items.some((i) => !i.establecimiento_id)
+    if (sinTienda) {
+      setMensajePago('Los productos del catálogo de ejemplo no se pueden pagar. Elige artículos reales de un establecimiento.')
+      return
+    }
+    const tiendas = new Set(items.map((i) => i.establecimiento_id))
+    if (tiendas.size > 1) {
+      setMensajePago('Paga un solo establecimiento por pedido. Vaciá el carrito o quitá productos de otra tienda.')
+      return
+    }
+
+    setPagando(true)
+    try {
+      const payload = items.map((i) => ({ id: i.id, cantidad: i.cantidad }))
+      const { init_point: urlPago } = await crearPreferenciaApi(payload)
+      if (urlPago) window.location.href = urlPago
+    } catch (e) {
+      setMensajePago(e?.message ?? 'No se pudo iniciar Mercado Pago')
+    } finally {
+      setPagando(false)
+    }
+  }
 
   return (
     <header className={estilos.contenedor}>
@@ -210,14 +244,29 @@ function BarraMenu() {
               </strong>
             </div>
             <div className={estilos.panelCarritoAcciones}>
-              <button
-                type="button"
-                className={estilos.panelCarritoVaciar}
-                onClick={vaciarCarrito}
-                disabled={items.length === 0}
-              >
-                Vaciar
-              </button>
+              {mensajePago && (
+                <p className={estilos.panelCarritoAviso} role="alert">
+                  {mensajePago}
+                </p>
+              )}
+              <div className={estilos.panelCarritoFilaBotones}>
+                <button
+                  type="button"
+                  className={estilos.panelCarritoPagar}
+                  onClick={irAPagarMercadoPago}
+                  disabled={items.length === 0 || pagando}
+                >
+                  {pagando ? 'Conectando…' : 'Pagar con Mercado Pago'}
+                </button>
+                <button
+                  type="button"
+                  className={estilos.panelCarritoVaciar}
+                  onClick={vaciarCarrito}
+                  disabled={items.length === 0}
+                >
+                  Vaciar
+                </button>
+              </div>
             </div>
           </div>
         </aside>

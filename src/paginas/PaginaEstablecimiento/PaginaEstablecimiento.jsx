@@ -8,6 +8,7 @@ import {
   eliminarProductoApi,
   subirImagenProductoApi,
 } from '../../servicios/servicioProductos'
+import { listarPedidosEstablecimientoApi } from '../../servicios/servicioPagos'
 import estilos from './PaginaEstablecimiento.module.css'
 
 function PaginaEstablecimiento() {
@@ -24,6 +25,9 @@ function PaginaEstablecimiento() {
   const [precio, setPrecio] = useState('')
   const [imagen, setImagen] = useState('')
   const [subiendoImagen, setSubiendoImagen] = useState(false)
+  const [pedidos, setPedidos] = useState([])
+  const [cargandoPedidos, setCargandoPedidos] = useState(false)
+  const [errorPedidos, setErrorPedidos] = useState(null)
 
   const cargarProductos = useCallback(async () => {
     if (!tieneEstablecimiento) return
@@ -39,9 +43,28 @@ function PaginaEstablecimiento() {
     }
   }, [tieneEstablecimiento])
 
+  const cargarPedidos = useCallback(async () => {
+    if (!tieneEstablecimiento) return
+    setCargandoPedidos(true)
+    setErrorPedidos(null)
+    try {
+      const lista = await listarPedidosEstablecimientoApi()
+      setPedidos(Array.isArray(lista) ? lista : [])
+    } catch (e) {
+      setErrorPedidos(e?.message ?? 'Error al cargar pedidos')
+      setPedidos([])
+    } finally {
+      setCargandoPedidos(false)
+    }
+  }, [tieneEstablecimiento])
+
   useEffect(() => {
     cargarProductos()
   }, [cargarProductos])
+
+  useEffect(() => {
+    cargarPedidos()
+  }, [cargarPedidos])
 
   const limpiarForm = () => {
     setEditandoId(null)
@@ -117,6 +140,16 @@ function PaginaEstablecimiento() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(valor)
+  }
+
+  const etiquetaEstadoPedido = (estado) => {
+    const mapa = {
+      pagado: 'Pagado',
+      esperando_pago: 'Esperando pago',
+      rechazado: 'Rechazado',
+      pendiente_mp: 'Pendiente (MP)',
+    }
+    return mapa[estado] ?? estado
   }
 
   if (!tieneEstablecimiento) {
@@ -387,12 +420,106 @@ function PaginaEstablecimiento() {
         </section>
 
         <section className={estilos.dashboardSeccion}>
-          <h2 className={estilos.dashboardTitulo}>Pedidos y envíos</h2>
-          <div className={estilos.cajaDashboard}>
-            <p className={estilos.listaVacia}>
-              Próximamente: ver pedidos de clientes y notificar al domiciliario cuando el pedido esté listo para recoger.
-            </p>
+          <div className={estilos.cabeceraPedidos}>
+            <h2 className={estilos.dashboardTitulo}>Pedidos (Mercado Pago)</h2>
+            <button
+              type="button"
+              className={estilos.botonIcono}
+              onClick={cargarPedidos}
+              disabled={cargandoPedidos}
+            >
+              {cargandoPedidos ? 'Actualizando…' : 'Actualizar'}
+            </button>
           </div>
+          <p className={estilos.textoRegistro} style={{ marginBottom: '1rem', color: 'var(--snappy-gris-secundario)' }}>
+            Los pedidos con estado <strong>Pagado</strong> aparecen aquí cuando Mercado Pago confirma el pago (webhook o al volver el cliente a la tienda).
+          </p>
+          {errorPedidos && (
+            <div className={estilos.mensajeErrorProducto} role="alert">
+              {errorPedidos}
+            </div>
+          )}
+          <div className={estilos.cajaDashboard}>
+            {cargandoPedidos && pedidos.length === 0 ? (
+              <p className={estilos.listaVacia}>Cargando pedidos…</p>
+            ) : pedidos.length === 0 ? (
+              <p className={estilos.listaVacia}>
+                Aún no hay pedidos. Cuando un cliente pague con Mercado Pago, verás la referencia, el total y los ítems aquí.
+              </p>
+            ) : (
+              <table className={estilos.tablaProductos}>
+                <thead>
+                  <tr>
+                    <th>Referencia</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pedidos.map((ped) => (
+                    <tr key={ped.id}>
+                      <td>
+                        <span className={estilos.refPedido}>{ped.external_reference}</span>
+                        {ped.mp_payment_id && (
+                          <span className={estilos.metaPedido} title="ID pago MP">
+                            MP #{ped.mp_payment_id}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {ped.cliente_nombre || '—'}
+                        {ped.cliente_correo && (
+                          <span className={estilos.metaPedido}>{ped.cliente_correo}</span>
+                        )}
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            ped.estado === 'pagado'
+                              ? estilos.badgePagado
+                              : estilos.badgeOtroEstado
+                          }
+                        >
+                          {etiquetaEstadoPedido(ped.estado)}
+                        </span>
+                      </td>
+                      <td className={estilos.precioCelda}>{formatearPrecio(ped.total)}</td>
+                      <td className={estilos.fechaPedido}>
+                        {ped.creado_en
+                          ? new Date(ped.creado_en).toLocaleString('es-CO', {
+                              dateStyle: 'short',
+                              timeStyle: 'short',
+                            })
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {pedidos.some((p) => Array.isArray(p.items) && p.items.length > 0) && (
+            <div className={estilos.cajaDashboard} style={{ marginTop: '1rem' }}>
+              <h3 className={estilos.dashboardTitulo} style={{ fontSize: 'var(--snappy-texto-lg)' }}>
+                Detalle por pedido reciente
+              </h3>
+              <ul className={estilos.listaDetallePedidos}>
+                {pedidos.slice(0, 5).map((ped) => (
+                  <li key={`d-${ped.id}`}>
+                    <strong>{ped.external_reference}</strong>
+                    {Array.isArray(ped.items) &&
+                      ped.items.map((it) => (
+                        <span key={it.producto_id} className={estilos.lineaItemPedido}>
+                          {it.nombre} ×{it.cantidad}
+                        </span>
+                      ))}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       </div>
     </div>

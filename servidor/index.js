@@ -6,6 +6,7 @@ import cors from 'cors'
 import { inicializarTabla } from './config/basedatos.js'
 import rutasAuth from './rutas/auth.js'
 import rutasProductos from './rutas/productos.js'
+import rutasPagos from './rutas/pagos.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // 1x1 transparent GIF (evita CORB cuando la imagen no existe en serverless)
@@ -45,6 +46,7 @@ app.get('/uploads/:nombre', (req, res) => {
 })
 app.use('/api/auth', rutasAuth)
 app.use('/api/productos', rutasProductos)
+app.use('/api/pagos', rutasPagos)
 
 if (!esVercel) {
   async function iniciar() {

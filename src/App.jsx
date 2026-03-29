@@ -10,6 +10,7 @@ import PaginaCuenta from './paginas/PaginaCuenta/PaginaCuenta'
 import PaginaCliente from './paginas/PaginaCliente/PaginaCliente'
 import PaginaEstablecimiento from './paginas/PaginaEstablecimiento/PaginaEstablecimiento'
 import PaginaDomiciliario from './paginas/PaginaDomiciliario/PaginaDomiciliario'
+import PaginaRetornoPago from './paginas/PaginaRetornoPago/PaginaRetornoPago'
 
 import estilos from './App.module.css'
 
@@ -34,6 +35,9 @@ function App() {
             <Route path="/cliente" element={<PaginaCliente />} />
             <Route path="/establecimiento" element={<PaginaEstablecimiento />} />
             <Route path="/domiciliario" element={<PaginaDomiciliario />} />
+            <Route path="/pago/exito" element={<PaginaRetornoPago />} />
+            <Route path="/pago/error" element={<PaginaRetornoPago />} />
+            <Route path="/pago/pendiente" element={<PaginaRetornoPago />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

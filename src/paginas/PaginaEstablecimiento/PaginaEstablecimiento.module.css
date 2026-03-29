@@ -364,3 +364,71 @@
   color: var(--snappy-gris-secundario);
   font-size: var(--snappy-texto-sm);
 }
+
+.cabeceraPedidos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.refPedido {
+  display: block;
+  font-weight: var(--snappy-peso-semibold);
+  font-size: var(--snappy-texto-xs);
+  word-break: break-all;
+}
+
+.metaPedido {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--snappy-gris-secundario);
+  margin-top: 0.2rem;
+}
+
+.fechaPedido {
+  font-size: var(--snappy-texto-xs);
+  white-space: nowrap;
+}
+
+.badgePagado {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--snappy-radio-pequeño);
+  background: rgba(0, 166, 80, 0.15);
+  color: #006b3c;
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+}
+
+.badgeOtroEstado {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--snappy-radio-pequeño);
+  background: var(--snappy-gris-claro);
+  color: var(--snappy-gris-texto);
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+}
+
+.listaDetallePedidos {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-texto);
+}
+
+.listaDetallePedidos li {
+  margin-bottom: 0.75rem;
+}
+
+.lineaItemPedido {
+  display: inline-block;
+  margin-left: 0.5rem;
+  margin-right: 0.35rem;
+  color: var(--snappy-gris-secundario);
+  font-size: var(--snappy-texto-xs);
+}

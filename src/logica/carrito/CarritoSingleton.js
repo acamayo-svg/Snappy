@@ -54,6 +54,7 @@ class CarritoSingleton {
           precio: producto.precio,
           imagen: producto.imagen ?? null,
           establecimiento: producto.establecimiento ?? null,
+          establecimiento_id: producto.establecimiento_id ?? null,
           cantidad: 1,
         },
       ]
