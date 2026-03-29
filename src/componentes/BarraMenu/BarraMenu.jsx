@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import { useCarrito } from '../../contextos/ContextoCarrito'
-import { crearPreferenciaPagoApi } from '../../servicios/servicioPagos'
 import estilos from './BarraMenu.module.css'
 
 const rutas = [
@@ -18,8 +17,6 @@ function BarraMenu() {
   const { usuario, cerrarSesion, cambiarRolActivo, cargando } = useAuth()
   const [menuRolesAbierto, setMenuRolesAbierto] = useState(false)
   const [carritoAbierto, setCarritoAbierto] = useState(false)
-  const [pagando, setPagando] = useState(false)
-  const [errorPago, setErrorPago] = useState(null)
   const [animarCarrito, setAnimarCarrito] = useState(false)
   const { totalItems, items, total, quitarDelCarrito, vaciarCarrito } = useCarrito()
 
@@ -30,27 +27,6 @@ function BarraMenu() {
       return () => clearTimeout(id)
     }
   }, [totalItems])
-
-  const irAPagar = async () => {
-    if (items.length === 0) return
-    setErrorPago(null)
-    setPagando(true)
-    try {
-      const body = items.map((item) => ({
-        title: item.nombre,
-        quantity: item.cantidad,
-        unit_price: item.precio || 0,
-      }))
-      const payer = usuario?.email ? { email: usuario.email } : undefined
-      const { url } = await crearPreferenciaPagoApi(body, payer)
-      if (url) window.location.href = url
-      else setErrorPago('No se obtuvo la URL de pago.')
-    } catch (e) {
-      setErrorPago(e?.message ?? 'Error al iniciar el pago.')
-    } finally {
-      setPagando(false)
-    }
-  }
 
   return (
     <header className={estilos.contenedor}>
@@ -221,11 +197,6 @@ function BarraMenu() {
               </ul>
             )}
           </div>
-          {errorPago && (
-              <p className={estilos.panelCarritoError} role="alert">
-                {errorPago}
-              </p>
-            )}
           <div className={estilos.panelCarritoFooter}>
             <div className={estilos.panelCarritoTotal}>
               <span>Total estimado</span>
@@ -246,14 +217,6 @@ function BarraMenu() {
                 disabled={items.length === 0}
               >
                 Vaciar
-              </button>
-              <button
-                type="button"
-                className={estilos.panelCarritoPagar}
-                disabled={items.length === 0 || pagando}
-                onClick={irAPagar}
-              >
-                {pagando ? 'Redirigiendo…' : 'Ir a pagar'}
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 /**
- * URL pública del backend (webhooks, uploads sin Cloudinary).
+ * URL pública del backend (uploads sin Cloudinary).
  * Orden: URL_SERVIDOR explícita → Render → Vercel → localhost.
  */
 export function urlBaseServidor() {
@@ -15,15 +15,4 @@ export function urlBaseServidor() {
 
   const puerto = process.env.PORT || process.env.PUERTO || 3000
   return `http://localhost:${puerto}`
-}
-
-/**
- * URL del front (back_urls de Mercado Pago). Fuerza https salvo localhost.
- */
-export function urlBaseFrontend() {
-  let u = (process.env.FRONTEND_URL || 'http://localhost:5173').trim().replace(/\/$/, '')
-  if (u.startsWith('http://') && !/localhost|127\.0\.0\.1/.test(u)) {
-    u = `https://${u.slice('http://'.length)}`
-  }
-  return u
 }

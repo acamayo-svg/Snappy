@@ -45,17 +45,6 @@ app.get('/uploads/:nombre', (req, res) => {
 })
 app.use('/api/auth', rutasAuth)
 app.use('/api/productos', rutasProductos)
-// Rutas de pagos (Mercado Pago) se cargan bajo demanda para evitar fallos en serverless
-let rutasPagosCache = null
-app.use('/api/pagos', async (req, res, next) => {
-  try {
-    if (!rutasPagosCache) rutasPagosCache = (await import('./rutas/pagos.js')).default
-    rutasPagosCache(req, res, next)
-  } catch (err) {
-    console.error('Error al cargar rutas de pagos:', err)
-    res.status(503).json({ mensaje: 'Módulo de pagos no disponible.' })
-  }
-})
 
 if (!esVercel) {
   async function iniciar() {
