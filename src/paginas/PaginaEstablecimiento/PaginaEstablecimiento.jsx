@@ -147,7 +147,8 @@ function PaginaEstablecimiento() {
       pagado: 'Pagado',
       esperando_pago: 'Esperando pago',
       rechazado: 'Rechazado',
-      pendiente_mp: 'Pendiente (MP)',
+      pendiente_wompi: 'Pendiente (Wompi)',
+      pendiente_mp: 'Pendiente (hist.)',
     }
     return mapa[estado] ?? estado
   }
@@ -421,7 +422,7 @@ function PaginaEstablecimiento() {
 
         <section className={estilos.dashboardSeccion}>
           <div className={estilos.cabeceraPedidos}>
-            <h2 className={estilos.dashboardTitulo}>Pedidos (Mercado Pago)</h2>
+            <h2 className={estilos.dashboardTitulo}>Pedidos (Wompi)</h2>
             <button
               type="button"
               className={estilos.botonIcono}
@@ -432,7 +433,7 @@ function PaginaEstablecimiento() {
             </button>
           </div>
           <p className={estilos.textoRegistro} style={{ marginBottom: '1rem', color: 'var(--snappy-gris-secundario)' }}>
-            Los pedidos con estado <strong>Pagado</strong> aparecen aquí cuando Mercado Pago confirma el pago (webhook o al volver el cliente a la tienda).
+            Los pedidos con estado <strong>Pagado</strong> aparecen aquí cuando Wompi confirma el pago (evento webhook o al volver el cliente tras el pago).
           </p>
           {errorPedidos && (
             <div className={estilos.mensajeErrorProducto} role="alert">
@@ -444,7 +445,7 @@ function PaginaEstablecimiento() {
               <p className={estilos.listaVacia}>Cargando pedidos…</p>
             ) : pedidos.length === 0 ? (
               <p className={estilos.listaVacia}>
-                Aún no hay pedidos. Cuando un cliente pague con Mercado Pago, verás la referencia, el total y los ítems aquí.
+                Aún no hay pedidos. Cuando un cliente pague con Wompi, verás la referencia, el total y los ítems aquí.
               </p>
             ) : (
               <table className={estilos.tablaProductos}>
@@ -462,9 +463,9 @@ function PaginaEstablecimiento() {
                     <tr key={ped.id}>
                       <td>
                         <span className={estilos.refPedido}>{ped.external_reference}</span>
-                        {ped.mp_payment_id && (
-                          <span className={estilos.metaPedido} title="ID pago MP">
-                            MP #{ped.mp_payment_id}
+                        {ped.transaction_id && (
+                          <span className={estilos.metaPedido} title="ID transacción Wompi">
+                            Wompi #{ped.transaction_id}
                           </span>
                         )}
                       </td>

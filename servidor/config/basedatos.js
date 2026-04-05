@@ -125,12 +125,17 @@ export async function inicializarTabla() {
         estado VARCHAR(30) NOT NULL DEFAULT 'esperando_pago',
         total NUMERIC(12, 2) NOT NULL CHECK (total >= 0),
         items_json JSONB NOT NULL DEFAULT '[]',
-        mp_preference_id VARCHAR(80),
-        mp_payment_id VARCHAR(50),
-        mp_status VARCHAR(30),
+        wompi_transaction_id VARCHAR(80),
+        wompi_status VARCHAR(40),
         creado_en TIMESTAMPTZ DEFAULT NOW(),
         actualizado_en TIMESTAMPTZ DEFAULT NOW()
       )
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS wompi_transaction_id VARCHAR(80)
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS wompi_status VARCHAR(40)
     `)
     await cliente.query(`
       CREATE INDEX IF NOT EXISTS idx_pedidos_establecimiento

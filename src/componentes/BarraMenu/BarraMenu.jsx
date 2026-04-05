@@ -2,7 +2,22 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import { useCarrito } from '../../contextos/ContextoCarrito'
-import { crearPreferenciaApi } from '../../servicios/servicioPagos'
+import { prepararPagoWompiApi } from '../../servicios/servicioPagos'
+
+const REF_WOMPI_STORAGE = 'snappy_wompi_ref'
+
+function cargarScriptWompi() {
+  if (typeof window === 'undefined') return Promise.reject(new Error('Sin ventana'))
+  if (window.WidgetCheckout) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script')
+    s.src = 'https://checkout.wompi.co/widget.js'
+    s.async = true
+    s.onload = () => resolve()
+    s.onerror = () => reject(new Error('No se pudo cargar el script de Wompi'))
+    document.body.appendChild(s)
+  })
+}
 import estilos from './BarraMenu.module.css'
 
 const rutas = [
@@ -31,7 +46,7 @@ function BarraMenu() {
     }
   }, [totalItems])
 
-  async function irAPagarMercadoPago() {
+  async function irAPagarWompi() {
     setMensajePago(null)
     if (!usuario) {
       navegar('/login', { state: { desde: ubicacion.pathname } })
@@ -53,10 +68,25 @@ function BarraMenu() {
     setPagando(true)
     try {
       const payload = items.map((i) => ({ id: i.id, cantidad: i.cantidad }))
-      const { init_point: urlPago } = await crearPreferenciaApi(payload)
-      if (urlPago) window.location.href = urlPago
+      const datos = await prepararPagoWompiApi(payload)
+      await cargarScriptWompi()
+
+      sessionStorage.setItem(REF_WOMPI_STORAGE, datos.reference)
+
+      const checkout = new window.WidgetCheckout({
+        currency: datos.currency,
+        amountInCents: datos.amountInCents,
+        reference: datos.reference,
+        publicKey: datos.publicKey,
+        signature: { integrity: datos.signatureIntegrity },
+        redirectUrl: datos.redirectUrl,
+      })
+
+      checkout.open(() => {
+        setCarritoAbierto(false)
+      })
     } catch (e) {
-      setMensajePago(e?.message ?? 'No se pudo iniciar Mercado Pago')
+      setMensajePago(e?.message ?? 'No se pudo iniciar Wompi')
     } finally {
       setPagando(false)
     }
@@ -253,10 +283,10 @@ function BarraMenu() {
                 <button
                   type="button"
                   className={estilos.panelCarritoPagar}
-                  onClick={irAPagarMercadoPago}
+                  onClick={irAPagarWompi}
                   disabled={items.length === 0 || pagando}
                 >
-                  {pagando ? 'Conectando…' : 'Pagar con Mercado Pago'}
+                  {pagando ? 'Conectando…' : 'Pagar con Wompi'}
                 </button>
                 <button
                   type="button"

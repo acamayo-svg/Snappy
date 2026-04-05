@@ -1,53 +1,50 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { obtenerComprobanteApi, sincronizarPagoApi } from '../../servicios/servicioPagos'
+import { Link, useSearchParams } from 'react-router-dom'
+import { obtenerComprobanteApi, sincronizarPagoWompiApi } from '../../servicios/servicioPagos'
 import { useCarrito } from '../../contextos/ContextoCarrito'
 import estilos from './PaginaRetornoPago.module.css'
 
+const REF_STORAGE = 'snappy_wompi_ref'
+
 /**
- * Páginas de retorno Checkout Pro (/pago/exito, /pago/error, /pago/pendiente).
- * Mercado Pago añade payment_id, status, external_reference, etc. en la query.
+ * Retorno tras pagar con Wompi Widget (redirect-url + ?id=transacción).
  */
 function PaginaRetornoPago() {
-  const ubicacion = useLocation()
   const [params] = useSearchParams()
   const { vaciarCarrito } = useCarrito()
   const [comprobante, setComprobante] = useState(null)
   const [error, setError] = useState(null)
   const [cargando, setCargando] = useState(true)
 
-  const esExito = ubicacion.pathname.includes('/pago/exito')
-  const esError = ubicacion.pathname.includes('/pago/error')
-  const esPendiente = ubicacion.pathname.includes('/pago/pendiente')
-
-  const paymentId = params.get('payment_id') || params.get('collection_id')
-  const mpStatus = params.get('status') || params.get('collection_status')
-  const externalRef = params.get('external_reference')
+  const transactionId = params.get('id')
+  const refParam = params.get('reference') || params.get('ref')
 
   useEffect(() => {
     let cancel = false
 
     async function cargar() {
-      if (esError) {
+      if (!transactionId) {
         setCargando(false)
+        setError('No se recibió el identificador de la transacción. Vuelve al carrito e intenta de nuevo.')
         return
       }
 
-      if (!externalRef) {
-        setCargando(false)
-        setError('No se recibió la referencia del pedido. Vuelve al inicio e intenta de nuevo.')
-        return
-      }
+      const referenceGuardada = refParam || sessionStorage.getItem(REF_STORAGE) || ''
 
       try {
-        if (esExito && paymentId) {
-          await sincronizarPagoApi(paymentId, externalRef)
-        }
+        const sync = await sincronizarPagoWompiApi(transactionId, referenceGuardada)
         if (cancel) return
-        const comp = await obtenerComprobanteApi(externalRef)
+
+        const refPedido = sync?.pedido?.external_reference || referenceGuardada
+        if (!refPedido) {
+          throw new Error('No se pudo obtener la referencia del pedido')
+        }
+
+        const comp = await obtenerComprobanteApi(refPedido)
         if (cancel) return
         setComprobante(comp)
-        if (esExito && comp?.estado === 'pagado') {
+        sessionStorage.removeItem(REF_STORAGE)
+        if (comp?.estado === 'pagado') {
           vaciarCarrito()
         }
       } catch (e) {
@@ -59,7 +56,7 @@ function PaginaRetornoPago() {
 
     cargar()
     return () => { cancel = true }
-  }, [esError, esExito, paymentId, externalRef, vaciarCarrito])
+  }, [transactionId, refParam, vaciarCarrito])
 
   const formatear = (n) =>
     new Intl.NumberFormat('es-CO', {
@@ -73,44 +70,6 @@ function PaginaRetornoPago() {
     return (
       <div className={estilos.contenedor}>
         <p className={estilos.mensaje}>Confirmando tu pago…</p>
-      </div>
-    )
-  }
-
-  if (esError) {
-    return (
-      <div className={estilos.contenedor}>
-        <div className={`${estilos.tarjeta} ${estilos.tarjetaError}`}>
-          <h1 className={estilos.titulo}>No se completó el pago</h1>
-          <p className={estilos.texto}>
-            El pago fue rechazado o cancelado. Puedes intentar de nuevo desde el carrito.
-          </p>
-          {mpStatus && (
-            <p className={estilos.detalle}>
-              Estado reportado: <strong>{mpStatus}</strong>
-            </p>
-          )}
-          <Link to="/" className={estilos.enlace}>Volver al inicio</Link>
-        </div>
-      </div>
-    )
-  }
-
-  if (esPendiente) {
-    return (
-      <div className={estilos.contenedor}>
-        <div className={`${estilos.tarjeta} ${estilos.tarjetaPendiente}`}>
-          <h1 className={estilos.titulo}>Pago pendiente</h1>
-          <p className={estilos.texto}>
-            Tu pago está en proceso o debes completarlo según el medio elegido. Te avisaremos cuando se acredite.
-          </p>
-          {comprobante && (
-            <p className={estilos.detalle}>
-              Pedido <strong>{comprobante.external_reference}</strong> — {comprobante.estado}
-            </p>
-          )}
-          <Link to="/" className={estilos.enlace}>Volver al inicio</Link>
-        </div>
       </div>
     )
   }
@@ -154,10 +113,16 @@ function PaginaRetornoPago() {
             <span>Total</span>
             <strong>{formatear(comprobante?.total)}</strong>
           </li>
-          {comprobante?.mp_payment_id && (
+          {comprobante?.transaction_id && (
             <li>
-              <span>ID pago (Mercado Pago)</span>
-              <strong>{comprobante.mp_payment_id}</strong>
+              <span>ID transacción (Wompi)</span>
+              <strong>{comprobante.transaction_id}</strong>
+            </li>
+          )}
+          {comprobante?.wompi_status && (
+            <li>
+              <span>Estado Wompi</span>
+              <strong>{comprobante.wompi_status}</strong>
             </li>
           )}
         </ul>

@@ -35,9 +35,7 @@ function App() {
             <Route path="/cliente" element={<PaginaCliente />} />
             <Route path="/establecimiento" element={<PaginaEstablecimiento />} />
             <Route path="/domiciliario" element={<PaginaDomiciliario />} />
-            <Route path="/pago/exito" element={<PaginaRetornoPago />} />
-            <Route path="/pago/error" element={<PaginaRetornoPago />} />
-            <Route path="/pago/pendiente" element={<PaginaRetornoPago />} />
+            <Route path="/pago/wompi/resultado" element={<PaginaRetornoPago />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

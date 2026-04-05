@@ -4,10 +4,11 @@ function obtenerToken() {
   return sessionStorage.getItem('snappy_token')
 }
 
-export async function crearPreferenciaApi(items) {
+/** Respuesta del backend para abrir el widget Wompi. */
+export async function prepararPagoWompiApi(items) {
   const token = obtenerToken()
   if (!token) throw new Error('Debes iniciar sesión para pagar')
-  const respuesta = await fetch(`${URL_BASE}/api/pagos/preferencia`, {
+  const respuesta = await fetch(`${URL_BASE}/api/pagos/preparar`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -20,11 +21,9 @@ export async function crearPreferenciaApi(items) {
   return data
 }
 
-export async function sincronizarPagoApi(paymentId, externalReference) {
-  const q = new URLSearchParams({
-    payment_id: String(paymentId),
-    external_reference: String(externalReference),
-  })
+export async function sincronizarPagoWompiApi(transactionId, reference = '') {
+  const q = new URLSearchParams({ id: String(transactionId) })
+  if (reference) q.set('reference', String(reference))
   const respuesta = await fetch(`${URL_BASE}/api/pagos/sincronizar?${q}`, {
     headers: { Accept: 'application/json' },
   })

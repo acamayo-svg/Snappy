@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import crypto from 'crypto'
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago'
 import { obtenerConexion } from '../config/basedatos.js'
 import { verificarToken } from '../middleware/verificarToken.js'
 import { urlBaseServidor } from '../config/urlPublica.js'
@@ -13,166 +12,163 @@ function urlFrontend() {
   return 'http://localhost:5173'
 }
 
-function mpAccessToken() {
-  const t = process.env.MP_ACCESS_TOKEN?.trim()
-  if (!t) throw new Error('MP_ACCESS_TOKEN no configurado')
-  return t
+function wompiApiBase() {
+  return (process.env.WOMPI_API_BASE || 'https://sandbox.wompi.co/v1').replace(/\/$/, '')
 }
 
-function crearClienteMp() {
-  return new MercadoPagoConfig({
-    accessToken: mpAccessToken(),
-    options: { timeout: 15000 },
+function wompiPublicKey() {
+  const k = process.env.WOMPI_PUBLIC_KEY?.trim()
+  if (!k) throw new Error('WOMPI_PUBLIC_KEY no configurado')
+  return k
+}
+
+function wompiPrivateKey() {
+  const k = process.env.WOMPI_PRIVATE_KEY?.trim()
+  if (!k) throw new Error('WOMPI_PRIVATE_KEY no configurado')
+  return k
+}
+
+function wompiIntegritySecret() {
+  const k = process.env.WOMPI_INTEGRITY_SECRET?.trim()
+  if (!k) throw new Error('WOMPI_INTEGRITY_SECRET no configurado')
+  return k
+}
+
+/** Pesos COP (enteros) → centavos Wompi (doc: monto × 100). */
+function montoACentavos(totalPesos) {
+  return Math.max(0, Math.round(Number(totalPesos) * 100))
+}
+
+function firmaIntegridad(reference, amountInCents) {
+  const cadena = `${reference}${amountInCents}COP${wompiIntegritySecret()}`
+  return crypto.createHash('sha256').update(cadena, 'utf8').digest('hex')
+}
+
+function valorPorRuta(obj, ruta) {
+  return ruta.split('.').reduce((o, k) => (o != null ? o[k] : undefined), obj)
+}
+
+function verificarFirmaEvento(body) {
+  const secreto = process.env.WOMPI_EVENTS_SECRET?.trim()
+  if (!secreto || !body?.signature?.properties || !body.timestamp) return true
+
+  let cadena = ''
+  for (const prop of body.signature.properties) {
+    const v = valorPorRuta(body.data, prop)
+    if (v === undefined || v === null) return false
+    cadena += String(v)
+  }
+  cadena += String(body.timestamp)
+  cadena += secreto
+  const hex = crypto.createHash('sha256').update(cadena, 'utf8').digest('hex').toUpperCase()
+  const esperado = (body.signature.checksum || '').toUpperCase()
+  return hex === esperado
+}
+
+async function fetchTransaccionWompi(id) {
+  const url = `${wompiApiBase()}/transactions/${encodeURIComponent(id)}`
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${wompiPrivateKey()}`, Accept: 'application/json' },
   })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(
+      json?.error?.message ||
+        json?.error?.reason?.[0] ||
+        json?.message ||
+        'Error consultando transacción Wompi'
+    )
+  }
+  const raw = json?.data ?? json
+  if (raw && typeof raw === 'object' && raw.reference == null && raw.transaction) {
+    return raw.transaction
+  }
+  return raw
 }
 
-/** COP entero para Checkout Pro (Mercado Pago Colombia). */
-function redondearCop(valor) {
-  return Math.max(0, Math.round(Number(valor)))
-}
+async function actualizarPedidoDesdeTransaccion(pool, tx) {
+  const ref = tx?.reference
+  if (!ref) return null
 
-async function actualizarPedidoDesdePago(pool, pago) {
-  const ext = pago?.external_reference
-  if (!ext) return null
-
+  const st = String(tx.status || '').toUpperCase()
   let nuevoEstado = null
-  const st = pago.status
-  if (st === 'approved') nuevoEstado = 'pagado'
-  else if (st === 'rejected' || st === 'cancelled') nuevoEstado = 'rechazado'
-  else if (st === 'pending' || st === 'in_process' || st === 'authorized') nuevoEstado = 'pendiente_mp'
+  if (st === 'APPROVED') nuevoEstado = 'pagado'
+  else if (['DECLINED', 'VOIDED', 'ERROR'].includes(st)) nuevoEstado = 'rechazado'
+  else nuevoEstado = 'pendiente_wompi'
 
-  const pid = pago.id != null ? String(pago.id) : null
+  const tid = tx.id != null ? String(tx.id) : null
 
   await pool.query(
     `UPDATE pedidos
      SET estado = COALESCE($1::text, estado),
-         mp_payment_id = COALESCE($2, mp_payment_id),
-         mp_status = $3,
+         wompi_transaction_id = COALESCE($2, wompi_transaction_id),
+         wompi_status = $3,
          actualizado_en = NOW()
      WHERE external_reference = $4`,
-    [nuevoEstado, pid, st ?? null, String(ext)]
+    [nuevoEstado, tid, st || null, String(ref)]
   )
 
   const r = await pool.query(
-    `SELECT id, external_reference, estado, total, items_json, mp_payment_id, mp_status,
+    `SELECT id, external_reference, estado, total, items_json, wompi_transaction_id, wompi_status,
             establecimiento_id, creado_en
      FROM pedidos WHERE external_reference = $1`,
-    [String(ext)]
+    [String(ref)]
   )
   return r.rows[0] ?? null
 }
 
-async function procesarNotificacionPago(req, res) {
+/** Webhook eventos Wompi (configurar en dashboard: URL de eventos). */
+router.post('/eventos', async (req, res) => {
   try {
-    const idPago = extraerIdPagoNotificacion(req)
-    if (!idPago) {
-      return res.status(200).send('ok')
+    const body = req.body
+    if (!body || typeof body !== 'object') {
+      return res.status(400).send('bad request')
     }
 
-    const secreto = process.env.MP_WEBHOOK_SECRET?.trim()
-    if (secreto && req.headers['x-signature']) {
-      const ok = verificarFirmaWebhook(req)
-      if (!ok) {
-        console.warn('[MP webhook] Firma inválida')
-        return res.status(401).send('invalid signature')
-      }
+    if (process.env.WOMPI_EVENTS_SECRET?.trim() && !verificarFirmaEvento(body)) {
+      console.warn('[Wompi] Firma de evento inválida')
+      return res.status(401).send('invalid signature')
     }
 
-    const pool = await obtenerConexion()
-    const paymentApi = new Payment(crearClienteMp())
-    const resultado = await paymentApi.get({ id: idPago })
-    const cuerpo = normalizarRespuestaMp(resultado)
-    if (cuerpo?.id) {
-      await actualizarPedidoDesdePago(pool, cuerpo)
+    if (body.event === 'transaction.updated' && body.data?.transaction) {
+      const pool = await obtenerConexion()
+      await actualizarPedidoDesdeTransaccion(pool, body.data.transaction)
     }
+
     return res.status(200).send('ok')
   } catch (err) {
-    console.error('[MP webhook]', err?.message || err)
+    console.error('[Wompi eventos]', err?.message || err)
     return res.status(500).send('error')
   }
-}
+})
 
-/** POST notificación Webhook */
-router.post('/webhook', procesarNotificacionPago)
-
-/** IPN antiguo (query string) */
-router.get('/webhook', procesarNotificacionPago)
-
-function normalizarRespuestaMp(resultado) {
-  if (!resultado || typeof resultado !== 'object') return null
-  const { api_response: _a, ...rest } = resultado
-  return rest
-}
-
-function extraerIdPagoNotificacion(req) {
-  const b = req.body || {}
-  if (b.data?.id) return String(b.data.id)
-  if (b.type === 'payment' && b.id) return String(b.id)
-  const q = req.query || {}
-  if (q['data.id']) return String(q['data.id'])
-  if (q.topic === 'payment' && q.id) return String(q.id)
-  return null
-}
-
-function verificarFirmaWebhook(req) {
-  const secret = process.env.MP_WEBHOOK_SECRET?.trim()
-  if (!secret) return false
-  const xSig = req.headers['x-signature']
-  const xReq = req.headers['x-request-id']
-  if (!xSig || !secret) return false
-
-  let ts
-  let v1
-  for (const part of String(xSig).split(',')) {
-    const idx = part.indexOf('=')
-    if (idx === -1) continue
-    const k = part.slice(0, idx).trim()
-    const v = part.slice(idx + 1).trim()
-    if (k === 'ts') ts = v
-    if (k === 'v1') v1 = v
-  }
-  const qs = req.query || {}
-  const dataId = qs['data.id'] ? String(qs['data.id']) : ''
-  const fragmentos = []
-  if (dataId) fragmentos.push(`id:${dataId}`)
-  if (xReq) fragmentos.push(`request-id:${xReq}`)
-  if (ts) fragmentos.push(`ts:${ts}`)
-  const manifest = `${fragmentos.join(';')};`
-  if (!ts || !v1 || fragmentos.length === 0) return false
-
-  const hmac = crypto.createHmac('sha256', secret).update(manifest).digest('hex')
-  return hmac === v1
-}
-
-/**
- * Tras volver de MP, sincroniza el pago (por si el webhook aún no llegó).
- * Verifica en la API de MP que el pago corresponde a external_reference.
- */
 router.get('/sincronizar', async (req, res) => {
   try {
-    const paymentId = req.query.payment_id || req.query.paymentId
-    const externalRef = req.query.external_reference || req.query.externalReference
-    if (!paymentId || !externalRef) {
-      return res.status(400).json({ mensaje: 'Faltan payment_id o external_reference' })
+    const id = req.query.id
+    let ref = req.query.reference || req.query.external_reference
+    if (!id) {
+      return res.status(400).json({ mensaje: 'Falta id de transacción' })
     }
 
+    const tx = await fetchTransaccionWompi(String(id))
+    if (!tx?.reference) {
+      return res.status(502).json({ mensaje: 'Respuesta Wompi sin referencia' })
+    }
+    if (ref && String(tx.reference) !== String(ref)) {
+      return res.status(400).json({ mensaje: 'La referencia no coincide con la transacción' })
+    }
+    ref = tx.reference
+
     const pool = await obtenerConexion()
-    const pedidoPrevio = await pool.query(
-      'SELECT id, external_reference FROM pedidos WHERE external_reference = $1',
-      [String(externalRef)]
+    const existe = await pool.query(
+      'SELECT id FROM pedidos WHERE external_reference = $1',
+      [String(ref)]
     )
-    if (pedidoPrevio.rows.length === 0) {
+    if (existe.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Pedido no encontrado' })
     }
 
-    const paymentApi = new Payment(crearClienteMp())
-    const resultado = await paymentApi.get({ id: String(paymentId) })
-    const pago = normalizarRespuestaMp(resultado)
-    if (String(pago?.external_reference) !== String(externalRef)) {
-      return res.status(400).json({ mensaje: 'El pago no coincide con el pedido' })
-    }
-
-    const fila = await actualizarPedidoDesdePago(pool, pago)
+    const fila = await actualizarPedidoDesdeTransaccion(pool, tx)
     return res.json({
       ok: true,
       pedido: fila
@@ -182,24 +178,23 @@ router.get('/sincronizar', async (req, res) => {
             estado: fila.estado,
             total: Number(fila.total),
             items: fila.items_json,
-            mp_payment_id: fila.mp_payment_id,
-            mp_status: fila.mp_status,
+            transaction_id: fila.wompi_transaction_id,
+            wompi_status: fila.wompi_status,
           }
         : null,
     })
   } catch (err) {
-    console.error('[MP sincronizar]', err?.message || err)
-    return res.status(500).json({ mensaje: 'No se pudo sincronizar el pago' })
+    console.error('[Wompi sincronizar]', err?.message || err)
+    return res.status(500).json({ mensaje: err?.message || 'No se pudo confirmar el pago' })
   }
 })
 
-/** Comprobante público (quien tenga el external_reference de la URL de retorno) */
 router.get('/comprobante/:externalReference', async (req, res) => {
   try {
     const { externalReference } = req.params
     const pool = await obtenerConexion()
     const r = await pool.query(
-      `SELECT p.id, p.external_reference, p.estado, p.total, p.items_json, p.mp_payment_id, p.mp_status,
+      `SELECT p.id, p.external_reference, p.estado, p.total, p.items_json, p.wompi_transaction_id, p.wompi_status,
               p.creado_en, e.nombre_negocio AS establecimiento_nombre
        FROM pedidos p
        JOIN establecimientos e ON p.establecimiento_id = e.id
@@ -216,8 +211,8 @@ router.get('/comprobante/:externalReference', async (req, res) => {
       estado: f.estado,
       total: Number(f.total),
       items: f.items_json,
-      mp_payment_id: f.mp_payment_id,
-      mp_status: f.mp_status,
+      transaction_id: f.wompi_transaction_id,
+      wompi_status: f.wompi_status,
       establecimiento_nombre: f.establecimiento_nombre,
       creado_en: f.creado_en,
     })
@@ -227,10 +222,8 @@ router.get('/comprobante/:externalReference', async (req, res) => {
   }
 })
 
-/**
- * Crea preferencia Checkout Pro: ítems validados en BD, un solo establecimiento.
- */
-router.post('/preferencia', verificarToken, async (req, res) => {
+/** Crea pedido + datos para WidgetCheckout Wompi (firma en servidor). */
+router.post('/preparar', verificarToken, async (req, res) => {
   try {
     const lineasCliente = req.body?.items
     if (!Array.isArray(lineasCliente) || lineasCliente.length === 0) {
@@ -263,7 +256,6 @@ router.post('/preferencia', verificarToken, async (req, res) => {
     }
     const establecimientoId = [...establecimientosIds][0]
 
-    const itemsMp = []
     let total = 0
     const itemsGuardar = []
 
@@ -271,15 +263,9 @@ router.post('/preferencia', verificarToken, async (req, res) => {
       const prod = porId.get(String(linea.id))
       if (!prod) continue
       const cant = Math.max(1, parseInt(String(linea.cantidad), 10) || 1)
-      const unit = redondearCop(prod.precio)
+      const unit = Math.max(0, Math.round(Number(prod.precio)))
       const sub = unit * cant
       total += sub
-      itemsMp.push({
-        title: (prod.nombre || 'Producto').slice(0, 256),
-        quantity: cant,
-        unit_price: unit,
-        currency_id: 'COP',
-      })
       itemsGuardar.push({
         producto_id: String(prod.id),
         nombre: prod.nombre,
@@ -288,9 +274,11 @@ router.post('/preferencia', verificarToken, async (req, res) => {
       })
     }
 
-    if (itemsMp.length === 0 || total <= 0) {
+    if (itemsGuardar.length === 0 || total <= 0) {
       return res.status(400).json({ mensaje: 'Total inválido' })
     }
+
+    const amountInCents = montoACentavos(total)
 
     const insertPedido = await pool.query(
       `INSERT INTO pedidos (
@@ -300,59 +288,25 @@ router.post('/preferencia', verificarToken, async (req, res) => {
       [establecimientoId, req.usuarioId, total, JSON.stringify(itemsGuardar)]
     )
 
-    const { id: pedidoId, external_reference: externalRef } = insertPedido.rows[0]
-    const baseFront = urlFrontend()
-    const baseApi = urlBaseServidor().replace(/\/$/, '')
-
-    const preferenceApi = new Preference(crearClienteMp())
-    // No prellenar `payer.email` salvo que MP_PREFILL_PAYER_EMAIL=1: en sandbox, un correo
-    // distinto al de la cuenta TESTUSER puede dejar el flujo de tarjeta en estado raro (p. ej. CVV no tokenizado).
-    const prefillPayer =
-      process.env.MP_PREFILL_PAYER_EMAIL === '1' && req.usuarioCorreo?.trim()
-
-    const prefBody = {
-      items: itemsMp,
-      external_reference: String(externalRef),
-      metadata: { pedido_uuid: String(pedidoId), snappy: '1' },
-      back_urls: {
-        success: `${baseFront}/pago/exito`,
-        failure: `${baseFront}/pago/error`,
-        pending: `${baseFront}/pago/pendiente`,
-      },
-      auto_return: 'approved',
-      notification_url: `${baseApi}/api/pagos/webhook`,
-      ...(prefillPayer ? { payer: { email: req.usuarioCorreo.trim() } } : {}),
-    }
-
-    const pref = await preferenceApi.create({ body: prefBody })
-    const cuerpo = normalizarRespuestaMp(pref)
-    const preferenceId = cuerpo?.id
-
-    if (preferenceId) {
-      await pool.query(
-        'UPDATE pedidos SET mp_preference_id = $1 WHERE id = $2',
-        [String(preferenceId), pedidoId]
-      )
-    }
-
-    const urlPago = cuerpo?.sandbox_init_point || cuerpo?.init_point
-    if (!urlPago) {
-      console.error('[MP] Respuesta preference sin URL de pago:', JSON.stringify(cuerpo))
-      return res.status(502).json({
-        mensaje: 'Mercado Pago no devolvió URL de pago. Revisa MP_ACCESS_TOKEN y moneda COP.',
-      })
-    }
+    const { external_reference: externalRef } = insertPedido.rows[0]
+    const refStr = String(externalRef)
+    const firma = firmaIntegridad(refStr, amountInCents)
+    const redirectUrl = `${urlFrontend()}/pago/wompi/resultado`
 
     return res.json({
-      init_point: urlPago,
-      preference_id: preferenceId,
-      external_reference: String(externalRef),
+      publicKey: wompiPublicKey(),
+      currency: 'COP',
+      amountInCents,
+      reference: refStr,
+      signatureIntegrity: firma,
+      redirectUrl,
     })
   } catch (err) {
-    console.error('[MP preferencia]', err?.message || err, err?.cause)
-    const msg = err?.message?.includes('MP_ACCESS_TOKEN')
-      ? 'Falta configurar MP_ACCESS_TOKEN en el servidor'
-      : 'No se pudo iniciar el pago. Intenta de nuevo.'
+    console.error('[Wompi preparar]', err?.message || err)
+    const msg =
+      err?.message?.includes('WOMPI_')
+        ? 'Faltan variables WOMPI_* en el servidor'
+        : 'No se pudo iniciar el pago. Intenta de nuevo.'
     return res.status(500).json({ mensaje: msg })
   }
 })
@@ -370,7 +324,7 @@ router.get('/pedidos-establecimiento', verificarToken, async (req, res) => {
     }
 
     const r = await pool.query(
-      `SELECT p.id, p.external_reference, p.estado, p.total, p.items_json, p.mp_payment_id, p.mp_status,
+      `SELECT p.id, p.external_reference, p.estado, p.total, p.items_json, p.wompi_transaction_id, p.wompi_status,
               p.creado_en, p.actualizado_en, u.nombre AS cliente_nombre, u.correo AS cliente_correo
        FROM pedidos p
        LEFT JOIN usuarios u ON p.cliente_id = u.id
@@ -386,8 +340,8 @@ router.get('/pedidos-establecimiento', verificarToken, async (req, res) => {
       estado: f.estado,
       total: Number(f.total),
       items: f.items_json,
-      mp_payment_id: f.mp_payment_id,
-      mp_status: f.mp_status,
+      transaction_id: f.wompi_transaction_id,
+      wompi_status: f.wompi_status,
       creado_en: f.creado_en,
       actualizado_en: f.actualizado_en,
       cliente_nombre: f.cliente_nombre,
