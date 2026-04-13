@@ -11,6 +11,7 @@ import PaginaCliente from './paginas/PaginaCliente/PaginaCliente'
 import PaginaEstablecimiento from './paginas/PaginaEstablecimiento/PaginaEstablecimiento'
 import PaginaDomiciliario from './paginas/PaginaDomiciliario/PaginaDomiciliario'
 import PaginaRetornoPago from './paginas/PaginaRetornoPago/PaginaRetornoPago'
+import PaginaBusqueda from './paginas/PaginaBusqueda/PaginaBusqueda'
 
 import estilos from './App.module.css'
 
@@ -32,6 +33,7 @@ function App() {
                 </RutaProtegida>
               }
             />
+            <Route path="/buscar" element={<PaginaBusqueda />} />
             <Route path="/cliente" element={<PaginaCliente />} />
             <Route path="/establecimiento" element={<PaginaEstablecimiento />} />
             <Route path="/domiciliario" element={<PaginaDomiciliario />} />

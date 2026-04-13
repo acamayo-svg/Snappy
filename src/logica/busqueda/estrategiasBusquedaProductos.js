@@ -1,82 +1,82 @@
-import { normalizarTextoBusqueda } from './normalizarTextoBusqueda.js'
-
 /**
- * Patrón Strategy: cada estrategia define cómo filtrar el catálogo según el término.
+ * Strategy: cada estrategia aplica un criterio sobre la lista de productos.
+ * MotorBusquedaProductos (contexto) encadena las estrategias en orden (AND lógico).
  */
-export class EstrategiaBusquedaPorNombre {
-  filtrar(productos, terminoCrudo) {
-    const t = normalizarTextoBusqueda(terminoCrudo)
-    if (!t) return productos
-    return productos.filter((p) => normalizarTextoBusqueda(p.nombre).includes(t))
+
+/** @typedef {{ texto?: string, categoria?: string, precioMin?: number | null, precioMax?: number | null }} CriteriosBusquedaProducto */
+
+export class EstrategiaFiltroNombre {
+  /** @param {unknown[]} productos @param {CriteriosBusquedaProducto} criterios */
+  aplicar(productos, criterios) {
+    const q = (criterios.texto ?? '').trim().toLowerCase()
+    if (!q) return productos
+    return productos.filter((p) => {
+      const nombre = String(p?.nombre ?? '').toLowerCase()
+      const desc = String(p?.descripcion ?? '').toLowerCase()
+      return nombre.includes(q) || desc.includes(q)
+    })
   }
 }
 
-export class EstrategiaBusquedaPorDescripcion {
-  filtrar(productos, terminoCrudo) {
-    const t = normalizarTextoBusqueda(terminoCrudo)
-    if (!t) return productos
-    return productos.filter((p) =>
-      normalizarTextoBusqueda(p.descripcion ?? '').includes(t)
+/** Categoría = tipo de establecimiento (`tipo_nombre` / `tipo_clave` del API). */
+export class EstrategiaFiltroCategoria {
+  aplicar(productos, criterios) {
+    const cat = (criterios.categoria ?? '').trim()
+    if (!cat) return productos
+    const catLower = cat.toLowerCase()
+    return productos.filter((p) => {
+      const tn = String(p?.tipo_nombre ?? '').trim().toLowerCase()
+      const tc = String(p?.tipo_clave ?? '').trim().toLowerCase()
+      return tn === catLower || tc === catLower
+    })
+  }
+}
+
+export class EstrategiaFiltroPrecio {
+  aplicar(productos, criterios) {
+    const min = criterios.precioMin
+    const max = criterios.precioMax
+    return productos.filter((p) => {
+      const precio = Number(p?.precio)
+      const n = Number.isFinite(precio) ? precio : 0
+      if (min != null && Number.isFinite(min) && n < min) return false
+      if (max != null && Number.isFinite(max) && n > max) return false
+      return true
+    })
+  }
+}
+
+export class MotorBusquedaProductos {
+  /** @param {{ aplicar: (productos: unknown[], c: CriteriosBusquedaProducto) => unknown[] }[]} estrategias */
+  constructor(estrategias) {
+    this.estrategias = estrategias
+  }
+
+  ejecutar(productos, criterios) {
+    return this.estrategias.reduce(
+      (lista, estrategia) => estrategia.aplicar(lista, criterios),
+      productos
     )
   }
 }
 
-/** Combina nombre y descripción (OR lógico). */
-export class EstrategiaBusquedaNombreYDescripcion {
-  constructor() {
-    this._porNombre = new EstrategiaBusquedaPorNombre()
-    this._porDesc = new EstrategiaBusquedaPorDescripcion()
-  }
+const motorPorDefecto = new MotorBusquedaProductos([
+  new EstrategiaFiltroNombre(),
+  new EstrategiaFiltroCategoria(),
+  new EstrategiaFiltroPrecio(),
+])
 
-  filtrar(productos, terminoCrudo) {
-    const t = normalizarTextoBusqueda(terminoCrudo)
-    if (!t) return productos
-    const porNombre = this._porNombre.filtrar(productos, terminoCrudo)
-    const porDesc = this._porDesc.filtrar(productos, terminoCrudo)
-    const ids = new Set([...porNombre, ...porDesc].map((p) => p.id))
-    return productos.filter((p) => ids.has(p.id))
-  }
+export function filtrarProductos(productos, criterios) {
+  const lista = Array.isArray(productos) ? [...productos] : []
+  return motorPorDefecto.ejecutar(lista, criterios ?? {})
 }
 
-export class EstrategiaBusquedaPorCategoria {
-  filtrar(productos, terminoCrudo) {
-    const t = normalizarTextoBusqueda(terminoCrudo)
-    if (!t) return productos
-    return productos.filter((p) =>
-      normalizarTextoBusqueda(p.categoria ?? '').includes(t)
-    )
+/** Nombres únicos de categoría (tipo de negocio) ordenados. */
+export function listarCategoriasDesdeProductos(productos) {
+  const mapa = new Map()
+  for (const p of productos || []) {
+    const n = String(p?.tipo_nombre ?? '').trim()
+    if (n) mapa.set(n.toLowerCase(), n)
   }
-}
-
-/**
- * Contexto del patrón Strategy: delega el filtrado en la estrategia actual.
- */
-export class BuscadorProductos {
-  constructor(estrategia) {
-    this.estrategia = estrategia
-  }
-
-  establecerEstrategia(estrategia) {
-    this.estrategia = estrategia
-  }
-
-  ejecutar(productos, termino) {
-    if (!Array.isArray(productos)) return []
-    return this.estrategia.filtrar(productos, termino)
-  }
-}
-
-const estrategiasPorModo = {
-  nombre: () => new EstrategiaBusquedaPorNombre(),
-  descripcion: () => new EstrategiaBusquedaPorDescripcion(),
-  categoria: () => new EstrategiaBusquedaPorCategoria(),
-  todo: () => new EstrategiaBusquedaNombreYDescripcion(),
-}
-
-/**
- * @param {'nombre' | 'descripcion' | 'categoria' | 'todo'} modo
- */
-export function crearBuscadorProductos(modo = 'todo') {
-  const factory = estrategiasPorModo[modo] ?? estrategiasPorModo.todo
-  return new BuscadorProductos(factory())
+  return [...mapa.values()].sort((a, b) => a.localeCompare(b, 'es'))
 }

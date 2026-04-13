@@ -5,10 +5,161 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   min-height: 56px;
   padding: 0 1.5rem;
   background-color: var(--snappy-rojo-principal);
   box-shadow: 0 2px 12px var(--snappy-sombra);
+}
+
+.areaBusqueda {
+  flex: 1;
+  min-width: 0;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.etiquetaBusqueda {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.busquedaCampo {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 42px;
+  padding: 3px 4px 3px 14px;
+  border-radius: 999px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.99) 0%,
+    rgba(248, 248, 250, 0.98) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition:
+    box-shadow 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 0.35s ease,
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.busquedaCampo:hover {
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.busquedaCampo:focus-within {
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.35),
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+}
+
+.inputBusqueda {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.35rem 0.5rem 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--snappy-texto-sm);
+  font-family: var(--snappy-fuente);
+  color: var(--snappy-gris-texto);
+  line-height: 1.35;
+}
+
+.inputBusqueda::placeholder {
+  color: rgba(0, 0, 0, 0.38);
+  transition: opacity 0.25s ease;
+}
+
+.busquedaCampo:focus-within .inputBusqueda::placeholder {
+  opacity: 0.65;
+}
+
+.inputBusqueda:focus {
+  outline: none;
+}
+
+.botonLupa {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(160deg, #c12a3d 0%, var(--snappy-rojo-principal) 45%, #8f0f24 100%);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
+}
+
+.botonLupa:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  filter: brightness(1.05);
+}
+
+.botonLupa:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  filter: brightness(0.96);
+}
+
+.botonLupa:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.iconoLupa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.botonLupa:hover .iconoLupa {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.botonLupa:active .iconoLupa {
+  transform: rotate(0deg) scale(0.92);
+}
+
+.iconoLupaSvg {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 
 .logo {
@@ -711,6 +862,22 @@
 .modalEnvioSecundario:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .areaBusqueda {
+    max-width: none;
+    order: 3;
+    width: 100%;
+  }
+
+  .contenedor {
+    flex-wrap: wrap;
+  }
+
+  .navegacion {
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 640px) {

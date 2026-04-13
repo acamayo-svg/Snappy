@@ -1,9 +1,9 @@
-export { normalizarTextoBusqueda } from './normalizarTextoBusqueda.js'
 export {
-  EstrategiaBusquedaPorNombre,
-  EstrategiaBusquedaPorDescripcion,
-  EstrategiaBusquedaNombreYDescripcion,
-  EstrategiaBusquedaPorCategoria,
-  BuscadorProductos,
-  crearBuscadorProductos,
+  EstrategiaFiltroNombre,
+  EstrategiaFiltroCategoria,
+  EstrategiaFiltroPrecio,
+  MotorBusquedaProductos,
+  filtrarProductos,
+  listarCategoriasDesdeProductos,
 } from './estrategiasBusquedaProductos.js'
+export { criteriosDesdeSearchParams, searchParamsDesdeCriterios } from './paramBusqueda.js'

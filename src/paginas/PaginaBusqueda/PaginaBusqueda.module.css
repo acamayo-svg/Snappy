@@ -1,0 +1,127 @@
+.contenedor {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 2.5rem;
+  min-height: calc(100vh - 64px);
+}
+
+.titulo {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  font-weight: var(--snappy-peso-bold);
+  color: var(--snappy-gris-texto);
+}
+
+.subtitulo {
+  margin: 0 0 1.25rem;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-secundario);
+}
+
+.panelFiltros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.5rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--snappy-radio-pequeño);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 140px;
+}
+
+.campoAncho {
+  flex: 1;
+  min-width: 200px;
+}
+
+.etiqueta {
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.input,
+.select {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-sm);
+  font-family: var(--snappy-fuente);
+}
+
+.botonesFiltro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.botonPrimario,
+.botonSecundario {
+  padding: 0.5rem 1rem;
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: var(--snappy-texto-sm);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  border: none;
+}
+
+.botonPrimario {
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+}
+
+.botonSecundario {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--snappy-gris-texto);
+}
+
+.meta {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-secundario);
+}
+
+.cargando,
+.vacio {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--snappy-gris-secundario);
+}
+
+.grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .panelFiltros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .campo,
+  .campoAncho {
+    min-width: 100%;
+  }
+
+  .botonesFiltro {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .botonPrimario,
+  .botonSecundario {
+    flex: 1;
+  }
+}

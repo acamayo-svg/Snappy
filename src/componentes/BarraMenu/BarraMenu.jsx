@@ -42,6 +42,14 @@ function BarraMenu() {
   const [envTel, setEnvTel] = useState('')
   const [envNota, setEnvNota] = useState('')
   const [guardarEnvioPerfil, setGuardarEnvioPerfil] = useState(true)
+  const [consultaBarra, setConsultaBarra] = useState('')
+
+  useEffect(() => {
+    if (ubicacion.pathname === '/buscar') {
+      const q = new URLSearchParams(ubicacion.search).get('q') ?? ''
+      setConsultaBarra(q)
+    }
+  }, [ubicacion.pathname, ubicacion.search])
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -73,8 +81,13 @@ function BarraMenu() {
       redirectUrl: datos.redirectUrl,
     })
 
-    checkout.open(() => {
+    checkout.open((resultado) => {
       setCarritoAbierto(false)
+      const tx = resultado?.transaction ?? resultado
+      const estado = String(tx?.status ?? '').toUpperCase()
+      if (estado === 'APPROVED') {
+        vaciarCarrito()
+      }
     })
   }
 
@@ -147,6 +160,19 @@ function BarraMenu() {
     }
   }
 
+  function enviarBusquedaBarra(e) {
+    e.preventDefault()
+    const p =
+      ubicacion.pathname === '/buscar'
+        ? new URLSearchParams(ubicacion.search)
+        : new URLSearchParams()
+    const t = consultaBarra.trim()
+    if (t) p.set('q', t)
+    else p.delete('q')
+    const qs = p.toString()
+    navegar(qs ? `/buscar?${qs}` : '/buscar')
+  }
+
   return (
     <header className={estilos.contenedor}>
       <Link to="/" className={estilos.logo} title="Snappy">
@@ -154,6 +180,43 @@ function BarraMenu() {
           <img src="/recursos/logo.png" alt="" className={estilos.imagenLogo} aria-hidden="true" />
         </span>
       </Link>
+      <form className={estilos.areaBusqueda} onSubmit={enviarBusquedaBarra} role="search">
+        <label htmlFor="snappy-busqueda-global" className={estilos.etiquetaBusqueda}>
+          Buscar productos
+        </label>
+        <div className={estilos.busquedaCampo}>
+          <input
+            id="snappy-busqueda-global"
+            className={estilos.inputBusqueda}
+            type="search"
+            autoComplete="off"
+            placeholder="Buscar productos por nombre…"
+            value={consultaBarra}
+            onChange={(e) => setConsultaBarra(e.target.value)}
+            aria-label="Buscar por nombre o descripción"
+          />
+          <button
+            type="submit"
+            className={estilos.botonLupa}
+            title="Buscar"
+            aria-label="Ejecutar búsqueda"
+          >
+            <span className={estilos.iconoLupa} aria-hidden="true">
+              <svg viewBox="0 0 24 24" className={estilos.iconoLupaSvg} focusable="false">
+                <circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.5 15.5L21 21"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </form>
       <nav className={estilos.navegacion}>
         {rutas
           .filter(({ rol }) => {
