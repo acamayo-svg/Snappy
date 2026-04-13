@@ -16,7 +16,7 @@ const ETIQUETAS_POR_ROL = {
 }
 
 export default class Usuario {
-  constructor({ id, email, nombre, roles, rolActivo, establecimiento, domiciliario }) {
+  constructor({ id, email, nombre, roles, rolActivo, establecimiento, domiciliario, envio }) {
     this.id = id
     this.email = email
     this.nombre = nombre ?? email
@@ -25,6 +25,18 @@ export default class Usuario {
     this.rolActivo = rolActivo && this.roles.includes(rolActivo) ? rolActivo : this.roles[0]
     this.establecimiento = establecimiento ?? null
     this.domiciliario = domiciliario ?? null
+    this.envio = envio && typeof envio === 'object'
+      ? {
+          direccion: envio.direccion ?? '',
+          telefono: envio.telefono ?? '',
+          nota: envio.nota ?? '',
+        }
+      : { direccion: '', telefono: '', nota: '' }
+  }
+
+  /** Dirección y teléfono obligatorios para pagar a domicilio. */
+  tieneEnvioCompleto() {
+    return Boolean(String(this.envio?.direccion ?? '').trim() && String(this.envio?.telefono ?? '').trim())
   }
 
   obtenerRutaInicio() {

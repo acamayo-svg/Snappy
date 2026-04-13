@@ -8,7 +8,10 @@ import {
   eliminarProductoApi,
   subirImagenProductoApi,
 } from '../../servicios/servicioProductos'
-import { listarPedidosEstablecimientoApi } from '../../servicios/servicioPagos'
+import {
+  listarPedidosEstablecimientoApi,
+  avanzarEstadoPedidoEstablecimientoApi,
+} from '../../servicios/servicioPagos'
 import estilos from './PaginaEstablecimiento.module.css'
 
 function PaginaEstablecimiento() {
@@ -28,6 +31,7 @@ function PaginaEstablecimiento() {
   const [pedidos, setPedidos] = useState([])
   const [cargandoPedidos, setCargandoPedidos] = useState(false)
   const [errorPedidos, setErrorPedidos] = useState(null)
+  const [actualizandoPedidoId, setActualizandoPedidoId] = useState(null)
 
   const cargarProductos = useCallback(async () => {
     if (!tieneEstablecimiento) return
@@ -149,8 +153,40 @@ function PaginaEstablecimiento() {
       rechazado: 'Rechazado',
       pendiente_wompi: 'Pendiente (Wompi)',
       pendiente_mp: 'Pendiente (hist.)',
+      en_preparacion: 'En preparación',
+      listo_reparto: 'Listo / reparto',
+      en_camino: 'En camino',
+      entregado: 'Entregado',
     }
     return mapa[estado] ?? estado
+  }
+
+  const columnasKanban = [
+    { id: 'pago', titulo: 'Pago pendiente', estados: ['esperando_pago', 'pendiente_wompi'] },
+    { id: 'por_hacer', titulo: 'Pagado', estados: ['pagado'] },
+    { id: 'cocina', titulo: 'En preparación', estados: ['en_preparacion'] },
+    { id: 'listo', titulo: 'Listo reparto', estados: ['listo_reparto'] },
+    { id: 'camino', titulo: 'En camino', estados: ['en_camino'] },
+    { id: 'hecho', titulo: 'Entregado', estados: ['entregado'] },
+    { id: 'fallo', titulo: 'Rechazado', estados: ['rechazado'] },
+  ]
+
+  const refPedidoCorta = (ref) => {
+    const s = String(ref || '')
+    return s.length > 10 ? `…${s.slice(-8)}` : s
+  }
+
+  const avanzarPedido = async (pedidoId, siguiente) => {
+    setActualizandoPedidoId(pedidoId)
+    setErrorPedidos(null)
+    try {
+      await avanzarEstadoPedidoEstablecimientoApi(pedidoId, siguiente)
+      await cargarPedidos()
+    } catch (e) {
+      setErrorPedidos(e?.message ?? 'No se pudo actualizar el pedido')
+    } finally {
+      setActualizandoPedidoId(null)
+    }
   }
 
   if (!tieneEstablecimiento) {
@@ -422,7 +458,7 @@ function PaginaEstablecimiento() {
 
         <section className={estilos.dashboardSeccion}>
           <div className={estilos.cabeceraPedidos}>
-            <h2 className={estilos.dashboardTitulo}>Pedidos (Wompi)</h2>
+            <h2 className={estilos.dashboardTitulo}>Pedidos y reparto</h2>
             <button
               type="button"
               className={estilos.botonIcono}
@@ -433,92 +469,143 @@ function PaginaEstablecimiento() {
             </button>
           </div>
           <p className={estilos.textoRegistro} style={{ marginBottom: '1rem', color: 'var(--snappy-gris-secundario)' }}>
-            Los pedidos con estado <strong>Pagado</strong> aparecen aquí cuando Wompi confirma el pago (evento webhook o al volver el cliente tras el pago).
+            Organiza por etapa: pago pendiente, pagado, cocina, listo para que un domiciliario lo reclame, en camino y
+            entregado. Cada tarjeta muestra envío y contacto del cliente.
           </p>
           {errorPedidos && (
             <div className={estilos.mensajeErrorProducto} role="alert">
               {errorPedidos}
             </div>
           )}
-          <div className={estilos.cajaDashboard}>
-            {cargandoPedidos && pedidos.length === 0 ? (
-              <p className={estilos.listaVacia}>Cargando pedidos…</p>
-            ) : pedidos.length === 0 ? (
+          {cargandoPedidos && pedidos.length === 0 ? (
+            <p className={estilos.listaVacia}>Cargando pedidos…</p>
+          ) : pedidos.length === 0 ? (
+            <div className={estilos.cajaDashboard}>
               <p className={estilos.listaVacia}>
-                Aún no hay pedidos. Cuando un cliente pague con Wompi, verás la referencia, el total y los ítems aquí.
+                Aún no hay pedidos. Cuando un cliente pague con Wompi, aparecerán aquí en tarjetas por columna.
               </p>
-            ) : (
-              <table className={estilos.tablaProductos}>
-                <thead>
-                  <tr>
-                    <th>Referencia</th>
-                    <th>Cliente</th>
-                    <th>Estado</th>
-                    <th>Total</th>
-                    <th>Fecha</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pedidos.map((ped) => (
-                    <tr key={ped.id}>
-                      <td>
-                        <span className={estilos.refPedido}>{ped.external_reference}</span>
-                        {ped.transaction_id && (
-                          <span className={estilos.metaPedido} title="ID transacción Wompi">
-                            Wompi #{ped.transaction_id}
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        {ped.cliente_nombre || '—'}
-                        {ped.cliente_correo && (
-                          <span className={estilos.metaPedido}>{ped.cliente_correo}</span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            ped.estado === 'pagado'
-                              ? estilos.badgePagado
-                              : estilos.badgeOtroEstado
-                          }
-                        >
-                          {etiquetaEstadoPedido(ped.estado)}
-                        </span>
-                      </td>
-                      <td className={estilos.precioCelda}>{formatearPrecio(ped.total)}</td>
-                      <td className={estilos.fechaPedido}>
-                        {ped.creado_en
-                          ? new Date(ped.creado_en).toLocaleString('es-CO', {
-                              dateStyle: 'short',
-                              timeStyle: 'short',
-                            })
-                          : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-          {pedidos.some((p) => Array.isArray(p.items) && p.items.length > 0) && (
-            <div className={estilos.cajaDashboard} style={{ marginTop: '1rem' }}>
-              <h3 className={estilos.dashboardTitulo} style={{ fontSize: 'var(--snappy-texto-lg)' }}>
-                Detalle por pedido reciente
-              </h3>
-              <ul className={estilos.listaDetallePedidos}>
-                {pedidos.slice(0, 5).map((ped) => (
-                  <li key={`d-${ped.id}`}>
-                    <strong>{ped.external_reference}</strong>
-                    {Array.isArray(ped.items) &&
-                      ped.items.map((it) => (
-                        <span key={it.producto_id} className={estilos.lineaItemPedido}>
-                          {it.nombre} ×{it.cantidad}
-                        </span>
-                      ))}
-                  </li>
-                ))}
-              </ul>
+            </div>
+          ) : (
+            <div className={estilos.kanban}>
+              {columnasKanban.map((col) => {
+                const enColumna = pedidos.filter((p) => col.estados.includes(p.estado))
+                return (
+                  <div key={col.id} className={estilos.kanbanColumna}>
+                    <h3 className={estilos.kanbanTitulo}>
+                      {col.titulo}
+                      <span className={estilos.kanbanContador}>{enColumna.length}</span>
+                    </h3>
+                    <div className={estilos.kanbanTarjetas}>
+                      {enColumna.length === 0 ? (
+                        <p className={estilos.kanbanVacio}>—</p>
+                      ) : (
+                        enColumna.map((ped) => (
+                          <article key={ped.id} className={estilos.tarjetaPedido}>
+                            <div className={estilos.tarjetaPedidoCab}>
+                              <span className={estilos.tarjetaPedidoRef} title={ped.external_reference}>
+                                {refPedidoCorta(ped.external_reference)}
+                              </span>
+                              <span
+                                className={
+                                  ped.estado === 'pagado' || ped.estado === 'entregado'
+                                    ? estilos.badgePagado
+                                    : estilos.badgeOtroEstado
+                                }
+                              >
+                                {etiquetaEstadoPedido(ped.estado)}
+                              </span>
+                            </div>
+                            <p className={estilos.tarjetaPedidoCliente}>
+                              {ped.cliente_nombre || 'Cliente'}
+                              {ped.cliente_correo && (
+                                <span className={estilos.tarjetaPedidoMeta}>{ped.cliente_correo}</span>
+                              )}
+                            </p>
+                            <p className={estilos.tarjetaPedidoEnvio}>
+                              <strong>Envío</strong>
+                              <span>{ped.envio?.direccion || '—'}</span>
+                              <span className={estilos.tarjetaPedidoMeta}>
+                                Tel. {ped.envio?.telefono || '—'}
+                              </span>
+                              {ped.envio?.nota ? (
+                                <span className={estilos.tarjetaPedidoMeta}>Nota: {ped.envio.nota}</span>
+                              ) : null}
+                            </p>
+                            {ped.domiciliario_nombre && (
+                              <p className={estilos.tarjetaPedidoDom}>
+                                Domiciliario: {ped.domiciliario_nombre}
+                                {ped.en_camino_en && ped.estado === 'en_camino' && (
+                                  <span className={estilos.tarjetaPedidoMeta}>
+                                    Salida:{' '}
+                                    {new Date(ped.en_camino_en).toLocaleString('es-CO', {
+                                      dateStyle: 'short',
+                                      timeStyle: 'short',
+                                    })}
+                                  </span>
+                                )}
+                                {ped.entregado_en && ped.estado === 'entregado' && (
+                                  <span className={estilos.tarjetaPedidoMeta}>
+                                    Entregado:{' '}
+                                    {new Date(ped.entregado_en).toLocaleString('es-CO', {
+                                      dateStyle: 'short',
+                                      timeStyle: 'short',
+                                    })}
+                                  </span>
+                                )}
+                              </p>
+                            )}
+                            <p className={estilos.tarjetaPedidoItems}>
+                              {Array.isArray(ped.items) &&
+                                ped.items.slice(0, 4).map((it) => (
+                                  <span key={`${ped.id}-${it.producto_id}`} className={estilos.tarjetaPedidoLineaItem}>
+                                    {it.nombre} ×{it.cantidad}
+                                  </span>
+                                ))}
+                              {Array.isArray(ped.items) && ped.items.length > 4 && (
+                                <span className={estilos.tarjetaPedidoMeta}>+{ped.items.length - 4} más</span>
+                              )}
+                            </p>
+                            <p className={estilos.tarjetaPedidoTotal}>{formatearPrecio(ped.total)}</p>
+                            <p className={estilos.tarjetaPedidoFecha}>
+                              {ped.creado_en
+                                ? new Date(ped.creado_en).toLocaleString('es-CO', {
+                                    dateStyle: 'short',
+                                    timeStyle: 'short',
+                                  })
+                                : '—'}
+                            </p>
+                            {ped.transaction_id && (
+                              <p className={estilos.tarjetaPedidoMeta}>Wompi #{ped.transaction_id}</p>
+                            )}
+                            <div className={estilos.tarjetaPedidoAcciones}>
+                              {ped.estado === 'pagado' && (
+                                <button
+                                  type="button"
+                                  className={estilos.botonMiniAccion}
+                                  disabled={actualizandoPedidoId === ped.id}
+                                  onClick={() => avanzarPedido(ped.id, 'en_preparacion')}
+                                >
+                                  A cocina
+                                </button>
+                              )}
+                              {ped.estado === 'en_preparacion' && (
+                                <button
+                                  type="button"
+                                  className={estilos.botonMiniAccion}
+                                  disabled={actualizandoPedidoId === ped.id}
+                                  onClick={() => avanzarPedido(ped.id, 'listo_reparto')}
+                                >
+                                  Listo para reparto
+                                </button>
+                              )}
+                            </div>
+                          </article>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </section>

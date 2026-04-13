@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contextos/ContextoAuth'
+import { guardarPerfilEnvioApi } from '../../servicios/servicioAuth'
 import estilos from './PaginaCuenta.module.css'
 
 function PaginaCuenta() {
@@ -9,6 +10,11 @@ function PaginaCuenta() {
   const [nombreNegocio, setNombreNegocio] = useState('')
   const [direccion, setDireccion] = useState('')
   const [telefono, setTelefono] = useState('')
+  const [envDir, setEnvDir] = useState('')
+  const [envTel, setEnvTel] = useState('')
+  const [envNota, setEnvNota] = useState('')
+  const [mensajeEnvio, setMensajeEnvio] = useState(null)
+  const [guardandoEnvio, setGuardandoEnvio] = useState(false)
 
   const tieneEstablecimiento = usuario?.tieneRol('establecimiento')
   const tieneDomiciliario = usuario?.tieneRol('domiciliario')
@@ -16,6 +22,13 @@ function PaginaCuenta() {
   useEffect(() => {
     refrescarCuenta()
   }, [refrescarCuenta])
+
+  useEffect(() => {
+    if (!usuario) return
+    setEnvDir(String(usuario.envio?.direccion ?? ''))
+    setEnvTel(String(usuario.envio?.telefono ?? ''))
+    setEnvNota(String(usuario.envio?.nota ?? ''))
+  }, [usuario])
 
   const enviarNegocio = async (e) => {
     e.preventDefault()
@@ -41,6 +54,25 @@ function PaginaCuenta() {
       await serDomiciliario()
     } catch {
       // Error en contexto
+    }
+  }
+
+  const guardarEnvio = async (e) => {
+    e.preventDefault()
+    setMensajeEnvio(null)
+    setGuardandoEnvio(true)
+    try {
+      await guardarPerfilEnvioApi({
+        direccion: envDir.trim(),
+        telefono: envTel.trim(),
+        nota: envNota.trim(),
+      })
+      await refrescarCuenta()
+      setMensajeEnvio('Datos de envío guardados.')
+    } catch (err) {
+      setMensajeEnvio(err?.message ?? 'No se pudo guardar')
+    } finally {
+      setGuardandoEnvio(false)
     }
   }
 
@@ -73,6 +105,60 @@ function PaginaCuenta() {
                 </span>
               ))}
             </p>
+          </div>
+        </section>
+
+        <section className={estilos.seccion}>
+          <h2 className={estilos.seccionTitulo}>Datos de envío a domicilio</h2>
+          <div className={estilos.tarjeta}>
+            <p className={estilos.opcionTexto}>
+              Dirección y teléfono se usan en cada pedido. Si no los completás aquí, te los pediremos antes de pagar.
+            </p>
+            <form onSubmit={guardarEnvio} className={estilos.formNegocio}>
+              <label className={estilos.etiqueta}>
+                Dirección
+                <input
+                  type="text"
+                  value={envDir}
+                  onChange={(e) => setEnvDir(e.target.value)}
+                  className={estilos.campoInput}
+                  placeholder="Calle, barrio, ciudad…"
+                  required
+                  disabled={guardandoEnvio}
+                />
+              </label>
+              <label className={estilos.etiqueta}>
+                Teléfono de contacto
+                <input
+                  type="tel"
+                  value={envTel}
+                  onChange={(e) => setEnvTel(e.target.value)}
+                  className={estilos.campoInput}
+                  placeholder="WhatsApp o celular"
+                  required
+                  disabled={guardandoEnvio}
+                />
+              </label>
+              <label className={estilos.etiqueta}>
+                Nota para el repartidor (opcional)
+                <textarea
+                  value={envNota}
+                  onChange={(e) => setEnvNota(e.target.value)}
+                  className={estilos.campoInput}
+                  placeholder="Torre, portería, referencias…"
+                  rows={2}
+                  disabled={guardandoEnvio}
+                />
+              </label>
+              {mensajeEnvio && (
+                <p className={mensajeEnvio.includes('guardados') ? estilos.mensajeOk : estilos.mensajeError} role="status">
+                  {mensajeEnvio}
+                </p>
+              )}
+              <button type="submit" className={estilos.boton} disabled={guardandoEnvio}>
+                {guardandoEnvio ? 'Guardando…' : 'Guardar datos de envío'}
+              </button>
+            </form>
           </div>
         </section>
 

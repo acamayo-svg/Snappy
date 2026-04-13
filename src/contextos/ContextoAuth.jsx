@@ -85,13 +85,16 @@ export function ProveedorAuth({ children }) {
   const refrescarCuenta = useCallback(async () => {
     try {
       const data = await obtenerMiCuentaApi()
-      actualizarUsuario({
+      const merged = {
         ...data.usuario,
         establecimiento: data.establecimiento ?? null,
         domiciliario: data.domiciliario ?? null,
-      })
+        envio: data.envio ?? { direccion: '', telefono: '', nota: '' },
+      }
+      actualizarUsuario(merged)
+      return crearUsuario(merged)
     } catch {
-      // Si falla (ej. token expirado), no forzamos cerrar sesión aquí
+      return null
     }
   }, [actualizarUsuario])
 
@@ -118,6 +121,7 @@ export function ProveedorAuth({ children }) {
     try {
       const { usuario: datosUsuario } = await serDomiciliarioApi()
       actualizarUsuario(datosUsuario)
+      await refrescarCuenta()
       return datosUsuario
     } catch (e) {
       const mensaje = e?.message ?? 'Error al registrarte como domiciliario'
@@ -126,7 +130,7 @@ export function ProveedorAuth({ children }) {
     } finally {
       setCargando(false)
     }
-  }, [actualizarUsuario])
+  }, [actualizarUsuario, refrescarCuenta])
 
   const cerrarSesion = useCallback(async () => {
     setCargando(true)

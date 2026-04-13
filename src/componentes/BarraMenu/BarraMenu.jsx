@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import { useCarrito } from '../../contextos/ContextoCarrito'
 import { prepararPagoWompiApi } from '../../servicios/servicioPagos'
+import estilos from './BarraMenu.module.css'
 
 const REF_WOMPI_STORAGE = 'snappy_wompi_ref'
 
@@ -18,7 +19,6 @@ function cargarScriptWompi() {
     document.body.appendChild(s)
   })
 }
-import estilos from './BarraMenu.module.css'
 
 const rutas = [
   { path: '/', etiqueta: 'Inicio' },
@@ -30,13 +30,18 @@ const rutas = [
 function BarraMenu() {
   const ubicacion = useLocation()
   const navegar = useNavigate()
-  const { usuario, cerrarSesion, cambiarRolActivo, cargando } = useAuth()
+  const { usuario, cerrarSesion, cambiarRolActivo, cargando, refrescarCuenta } = useAuth()
   const [menuRolesAbierto, setMenuRolesAbierto] = useState(false)
   const [carritoAbierto, setCarritoAbierto] = useState(false)
   const [animarCarrito, setAnimarCarrito] = useState(false)
   const { totalItems, items, total, quitarDelCarrito, vaciarCarrito } = useCarrito()
   const [pagando, setPagando] = useState(false)
   const [mensajePago, setMensajePago] = useState(null)
+  const [modalEnvio, setModalEnvio] = useState(false)
+  const [envDir, setEnvDir] = useState('')
+  const [envTel, setEnvTel] = useState('')
+  const [envNota, setEnvNota] = useState('')
+  const [guardarEnvioPerfil, setGuardarEnvioPerfil] = useState(true)
 
   useEffect(() => {
     if (totalItems > 0) {
@@ -45,6 +50,33 @@ function BarraMenu() {
       return () => clearTimeout(id)
     }
   }, [totalItems])
+
+  useEffect(() => {
+    if (!modalEnvio || !usuario) return
+    setEnvDir(String(usuario.envio?.direccion ?? ''))
+    setEnvTel(String(usuario.envio?.telefono ?? ''))
+    setEnvNota(String(usuario.envio?.nota ?? ''))
+  }, [modalEnvio, usuario])
+
+  async function abrirWompiConPayload(payload, opcionesPreparar = {}) {
+    const datos = await prepararPagoWompiApi(payload, opcionesPreparar)
+    await cargarScriptWompi()
+
+    sessionStorage.setItem(REF_WOMPI_STORAGE, datos.reference)
+
+    const checkout = new window.WidgetCheckout({
+      currency: datos.currency,
+      amountInCents: datos.amountInCents,
+      reference: datos.reference,
+      publicKey: datos.publicKey,
+      signature: { integrity: datos.signatureIntegrity },
+      redirectUrl: datos.redirectUrl,
+    })
+
+    checkout.open(() => {
+      setCarritoAbierto(false)
+    })
+  }
 
   async function irAPagarWompi() {
     setMensajePago(null)
@@ -66,27 +98,50 @@ function BarraMenu() {
     }
 
     setPagando(true)
+    let cuenta = usuario
+    try {
+      const actualizado = await refrescarCuenta()
+      if (actualizado) cuenta = actualizado
+    } catch {
+      // seguimos con datos locales si falla
+    }
+
+    if (!cuenta?.tieneEnvioCompleto?.()) {
+      setModalEnvio(true)
+      setPagando(false)
+      return
+    }
+
     try {
       const payload = items.map((i) => ({ id: i.id, cantidad: i.cantidad }))
-      const datos = await prepararPagoWompiApi(payload)
-      await cargarScriptWompi()
-
-      sessionStorage.setItem(REF_WOMPI_STORAGE, datos.reference)
-
-      const checkout = new window.WidgetCheckout({
-        currency: datos.currency,
-        amountInCents: datos.amountInCents,
-        reference: datos.reference,
-        publicKey: datos.publicKey,
-        signature: { integrity: datos.signatureIntegrity },
-        redirectUrl: datos.redirectUrl,
-      })
-
-      checkout.open(() => {
-        setCarritoAbierto(false)
-      })
+      await abrirWompiConPayload(payload, {})
     } catch (e) {
       setMensajePago(e?.message ?? 'No se pudo iniciar Wompi')
+    } finally {
+      setPagando(false)
+    }
+  }
+
+  async function confirmarEnvioYPagar(e) {
+    e.preventDefault()
+    setMensajePago(null)
+    const dir = envDir.trim()
+    const tel = envTel.trim()
+    if (!dir || !tel) {
+      setMensajePago('Dirección y teléfono son obligatorios para el envío.')
+      return
+    }
+    setPagando(true)
+    try {
+      const payload = items.map((i) => ({ id: i.id, cantidad: i.cantidad }))
+      await abrirWompiConPayload(payload, {
+        envio: { direccion: dir, telefono: tel, nota: envNota.trim() },
+        guardar_envio_en_perfil: guardarEnvioPerfil,
+      })
+      setModalEnvio(false)
+      await refrescarCuenta()
+    } catch (err) {
+      setMensajePago(err?.message ?? 'No se pudo iniciar Wompi')
     } finally {
       setPagando(false)
     }
@@ -102,21 +157,18 @@ function BarraMenu() {
       <nav className={estilos.navegacion}>
         {rutas
           .filter(({ rol }) => {
-            // Sin sesión: mostramos todas las rutas públicas (Inicio, Cliente, Establecimiento, Domiciliario)
             if (!usuario) return true
-            // Con sesión: solo mostramos rutas sin rol (por ahora solo Inicio);
-            // la navegación por roles se hace con el selector de rol.
             return !rol
           })
           .map(({ path, etiqueta }) => (
-          <Link
-            key={path}
-            to={path}
-            className={path === ubicacion.pathname ? estilos.enlaceActivo : estilos.enlace}
-          >
-            {etiqueta}
-          </Link>
-        ))}
+            <Link
+              key={path}
+              to={path}
+              className={path === ubicacion.pathname ? estilos.enlaceActivo : estilos.enlace}
+            >
+              {etiqueta}
+            </Link>
+          ))}
         <button
           type="button"
           className={`${estilos.botonCarritoIcono} ${
@@ -226,6 +278,88 @@ function BarraMenu() {
           </Link>
         )}
       </nav>
+      {modalEnvio && (
+        <div
+          className={estilos.modalEnvioOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-envio-pago"
+        >
+          <div className={estilos.modalEnvio}>
+            <h2 id="titulo-envio-pago" className={estilos.modalEnvioTitulo}>
+              Datos de envío
+            </h2>
+            <p className={estilos.modalEnvioTexto}>
+              Necesitamos dirección y teléfono para el domicilio. También puedes guardarlos en{' '}
+              <Link to="/cuenta" className={estilos.modalEnvioEnlace} onClick={() => setModalEnvio(false)}>
+                Mi cuenta
+              </Link>
+              .
+            </p>
+            <form onSubmit={confirmarEnvioYPagar} className={estilos.modalEnvioForm}>
+              <label className={estilos.modalEnvioEtiqueta}>
+                Dirección
+                <input
+                  className={estilos.modalEnvioInput}
+                  value={envDir}
+                  onChange={(ev) => setEnvDir(ev.target.value)}
+                  required
+                  autoComplete="street-address"
+                />
+              </label>
+              <label className={estilos.modalEnvioEtiqueta}>
+                Teléfono de contacto
+                <input
+                  className={estilos.modalEnvioInput}
+                  value={envTel}
+                  onChange={(ev) => setEnvTel(ev.target.value)}
+                  required
+                  autoComplete="tel"
+                />
+              </label>
+              <label className={estilos.modalEnvioEtiqueta}>
+                Nota para el repartidor (opcional)
+                <textarea
+                  className={estilos.modalEnvioTextarea}
+                  value={envNota}
+                  onChange={(ev) => setEnvNota(ev.target.value)}
+                  rows={2}
+                  placeholder="Torre, portería, referencias…"
+                />
+              </label>
+              <label className={estilos.modalEnvioCheck}>
+                <input
+                  type="checkbox"
+                  checked={guardarEnvioPerfil}
+                  onChange={(ev) => setGuardarEnvioPerfil(ev.target.checked)}
+                />
+                Guardar en mi perfil para próximas compras
+              </label>
+              {mensajePago && (
+                <p className={estilos.modalEnvioError} role="alert">
+                  {mensajePago}
+                </p>
+              )}
+              <div className={estilos.modalEnvioBotones}>
+                <button
+                  type="button"
+                  className={estilos.modalEnvioSecundario}
+                  onClick={() => {
+                    setModalEnvio(false)
+                    setMensajePago(null)
+                  }}
+                  disabled={pagando}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className={estilos.modalEnvioPrimario} disabled={pagando}>
+                  {pagando ? 'Conectando…' : 'Continuar y pagar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {carritoAbierto && (
         <aside className={estilos.panelCarrito} aria-label="Carrito de compras">
           <div className={estilos.panelCarritoHeader}>
@@ -274,7 +408,7 @@ function BarraMenu() {
               </strong>
             </div>
             <div className={estilos.panelCarritoAcciones}>
-              {mensajePago && (
+              {mensajePago && !modalEnvio && (
                 <p className={estilos.panelCarritoAviso} role="alert">
                   {mensajePago}
                 </p>

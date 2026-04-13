@@ -125,6 +125,21 @@ function PaginaRetornoPago() {
               <strong>{comprobante.wompi_status}</strong>
             </li>
           )}
+          {comprobante?.envio?.direccion && (
+            <li>
+              <span>Envío</span>
+              <strong>
+                {comprobante.envio.direccion}
+                {comprobante.envio.telefono ? ` · Tel. ${comprobante.envio.telefono}` : ''}
+              </strong>
+            </li>
+          )}
+          {comprobante?.envio?.nota ? (
+            <li>
+              <span>Nota</span>
+              <strong>{comprobante.envio.nota}</strong>
+            </li>
+          ) : null}
         </ul>
 
         {Array.isArray(comprobante?.items) && comprobante.items.length > 0 && (

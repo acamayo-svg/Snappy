@@ -196,11 +196,54 @@ router.post('/ser-domiciliario', verificarToken, async (req, res) => {
   }
 })
 
+router.put('/perfil-envio', verificarToken, async (req, res) => {
+  try {
+    const direccion = String(req.body?.direccion ?? '').trim()
+    const telefono = String(req.body?.telefono ?? '').trim()
+    const nota = String(req.body?.nota ?? '').trim() || null
+
+    if (!direccion) {
+      return res.status(400).json({ mensaje: 'La dirección de envío es obligatoria' })
+    }
+    if (!telefono) {
+      return res.status(400).json({ mensaje: 'El teléfono de contacto es obligatorio' })
+    }
+
+    const pool = await obtenerConexion()
+    await pool.query(
+      `UPDATE usuarios
+       SET envio_direccion = $1, envio_telefono = $2, envio_nota = $3
+       WHERE id = $4`,
+      [direccion, telefono, nota, req.usuarioId]
+    )
+
+    const resultado = await pool.query(
+      `SELECT id, correo, nombre, roles, envio_direccion, envio_telefono, envio_nota
+       FROM usuarios WHERE id = $1`,
+      [req.usuarioId]
+    )
+    const fila = resultado.rows[0]
+    res.json({
+      mensaje: 'Datos de envío guardados',
+      usuario: usuarioARespuesta(fila),
+      envio: {
+        direccion: fila.envio_direccion || '',
+        telefono: fila.envio_telefono || '',
+        nota: fila.envio_nota || '',
+      },
+    })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ mensaje: 'Error al guardar datos de envío' })
+  }
+})
+
 router.get('/yo', verificarToken, async (req, res) => {
   try {
     const pool = await obtenerConexion()
     const resultado = await pool.query(
-      'SELECT id, correo, nombre, roles FROM usuarios WHERE id = $1',
+      `SELECT id, correo, nombre, roles, envio_direccion, envio_telefono, envio_nota
+       FROM usuarios WHERE id = $1`,
       [req.usuarioId]
     )
     const fila = resultado.rows[0]
@@ -222,6 +265,11 @@ router.get('/yo', verificarToken, async (req, res) => {
       usuario: usuarioARespuesta(fila),
       establecimiento: establecimiento.rows[0] || null,
       domiciliario: domiciliario.rows[0] || null,
+      envio: {
+        direccion: fila.envio_direccion || '',
+        telefono: fila.envio_telefono || '',
+        nota: fila.envio_nota || '',
+      },
     })
   } catch (err) {
     console.error(err)

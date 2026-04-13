@@ -432,3 +432,173 @@
   color: var(--snappy-gris-secundario);
   font-size: var(--snappy-texto-xs);
 }
+
+.kanban {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x proximity;
+}
+
+.kanbanColumna {
+  flex: 0 0 min(220px, 78vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+
+.kanbanTitulo {
+  margin: 0 0 0.5rem;
+  font-size: var(--snappy-texto-xs);
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.kanbanContador {
+  background: var(--snappy-gris-claro);
+  color: var(--snappy-gris-texto);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.65rem;
+  font-weight: var(--snappy-peso-bold);
+}
+
+.kanbanTarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.kanbanVacio {
+  margin: 0;
+  padding: 0.5rem;
+  font-size: var(--snappy-texto-xs);
+  color: var(--snappy-gris-secundario);
+  text-align: center;
+  background: var(--snappy-gris-claro);
+  border-radius: var(--snappy-radio-pequeño);
+}
+
+.tarjetaPedido {
+  background: var(--snappy-blanco);
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-pequeño);
+  padding: 0.65rem 0.7rem;
+  font-size: var(--snappy-texto-xs);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.tarjetaPedidoCab {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.tarjetaPedidoRef {
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+}
+
+.tarjetaPedidoCliente {
+  margin: 0 0 0.35rem;
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-gris-texto);
+}
+
+.tarjetaPedidoEnvio {
+  margin: 0 0 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  line-height: 1.35;
+}
+
+.tarjetaPedidoEnvio strong {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--snappy-gris-secundario);
+  letter-spacing: 0.03em;
+}
+
+.tarjetaPedidoDom {
+  margin: 0 0 0.35rem;
+  padding: 0.35rem 0.4rem;
+  background: rgba(0, 102, 204, 0.06);
+  border-radius: var(--snappy-radio-pequeño);
+  font-size: 0.7rem;
+}
+
+.tarjetaPedidoItems {
+  margin: 0 0 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tarjetaPedidoLineaItem {
+  display: inline-block;
+  background: var(--snappy-gris-claro);
+  padding: 0.12rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: var(--snappy-gris-texto);
+}
+
+.tarjetaPedidoMeta {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--snappy-gris-secundario);
+  font-weight: var(--snappy-peso-normal);
+}
+
+.tarjetaPedidoTotal {
+  margin: 0;
+  font-weight: var(--snappy-peso-semibold);
+  color: var(--snappy-rojo-principal);
+  font-size: var(--snappy-texto-sm);
+}
+
+.tarjetaPedidoFecha {
+  margin: 0.25rem 0 0;
+  font-size: 0.65rem;
+  color: var(--snappy-gris-secundario);
+}
+
+.tarjetaPedidoAcciones {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.botonMiniAccion {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  border: none;
+  border-radius: var(--snappy-radio-pequeño);
+  background: var(--snappy-rojo-principal);
+  color: var(--snappy-blanco);
+  font-size: 0.65rem;
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+}
+
+.botonMiniAccion:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

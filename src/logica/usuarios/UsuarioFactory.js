@@ -19,5 +19,6 @@ export function crearUsuario(datos) {
     rolActivo: datos?.rolActivo,
     establecimiento: datos?.establecimiento ?? null,
     domiciliario: datos?.domiciliario ?? null,
+    envio: datos?.envio,
   })
 }

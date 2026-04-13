@@ -145,6 +145,48 @@ export async function inicializarTabla() {
       CREATE INDEX IF NOT EXISTS idx_pedidos_external_ref
       ON pedidos(external_reference)
     `)
+
+    await cliente.query(`
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS envio_direccion TEXT
+    `)
+    await cliente.query(`
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS envio_telefono VARCHAR(40)
+    `)
+    await cliente.query(`
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS envio_nota TEXT
+    `)
+
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS envio_direccion TEXT
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS envio_telefono VARCHAR(40)
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS envio_nota TEXT
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS domiciliario_id UUID REFERENCES domiciliarios(id) ON DELETE SET NULL
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS asignado_domiciliario_en TIMESTAMPTZ
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS en_camino_en TIMESTAMPTZ
+    `)
+    await cliente.query(`
+      ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS entregado_en TIMESTAMPTZ
+    `)
+
+    await cliente.query(`
+      CREATE INDEX IF NOT EXISTS idx_pedidos_establecimiento_estado
+      ON pedidos(establecimiento_id, estado)
+    `)
+    await cliente.query(`
+      CREATE INDEX IF NOT EXISTS idx_pedidos_domiciliario
+      ON pedidos(domiciliario_id)
+      WHERE domiciliario_id IS NOT NULL
+    `)
   } finally {
     cliente.release()
   }

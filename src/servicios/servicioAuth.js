@@ -53,6 +53,20 @@ export async function obtenerMiCuentaApi() {
   return body
 }
 
+export async function guardarPerfilEnvioApi({ direccion, telefono, nota }) {
+  const respuesta = await peticion('/api/auth/perfil-envio', {
+    method: 'PUT',
+    body: JSON.stringify({
+      direccion,
+      telefono,
+      nota: nota ?? '',
+    }),
+  })
+  const body = await respuesta.json().catch(() => ({}))
+  if (!respuesta.ok) throw new Error(body.mensaje ?? 'Error al guardar datos de envío')
+  return body
+}
+
 export async function registrarNegocioApi(datos) {
   const respuesta = await peticion('/api/auth/registrar-negocio', {
     method: 'POST',
