@@ -100,3 +100,9 @@
   margin: 0 auto;
   padding: 0 1.5rem 2rem;
 }
+
+.mensajeCarga {
+  margin: 0 0 1rem;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-secundario);
+}

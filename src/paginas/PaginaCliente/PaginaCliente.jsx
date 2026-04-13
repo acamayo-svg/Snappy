@@ -1,12 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Carrusel from '../../componentes/Carrusel/Carrusel'
+import BarraBusquedaProductos from '../../componentes/BarraBusquedaProductos/BarraBusquedaProductos'
 import { listarProductosApi } from '../../servicios/servicioProductos'
 import { productosEjemplo } from '../../datos/productos-ejemplo'
+import { crearBuscadorProductos } from '../../logica/busqueda'
 import estilos from './PaginaCliente.module.css'
 
 function PaginaCliente() {
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [terminoBusqueda, setTerminoBusqueda] = useState('')
+  const [modoBusqueda, setModoBusqueda] = useState('todo')
+
+  const buscador = useMemo(() => crearBuscadorProductos(modoBusqueda), [modoBusqueda])
 
   useEffect(() => {
     let cancel = false
@@ -23,7 +29,11 @@ function PaginaCliente() {
     return () => { cancel = true }
   }, [])
 
-  const items = productos.length > 0 ? productos : productosEjemplo
+  const itemsBase = productos.length > 0 ? productos : productosEjemplo
+  const items = useMemo(
+    () => buscador.ejecutar(itemsBase, terminoBusqueda),
+    [buscador, itemsBase, terminoBusqueda]
+  )
 
   return (
     <div className={estilos.contenedor}>
@@ -39,6 +49,15 @@ function PaginaCliente() {
         </div>
       </section>
       <div className={estilos.contenido}>
+        <BarraBusquedaProductos
+          valor={terminoBusqueda}
+          onValorChange={setTerminoBusqueda}
+          modo={modoBusqueda}
+          onModoChange={setModoBusqueda}
+        />
+        {cargando ? (
+          <p className={estilos.mensajeCarga}>Cargando productos…</p>
+        ) : null}
         <Carrusel titulo="Para ti" items={items} />
         <Carrusel titulo="Recomendados" items={items.length > 4 ? items.slice(0, 4) : [...items].reverse()} />
       </div>

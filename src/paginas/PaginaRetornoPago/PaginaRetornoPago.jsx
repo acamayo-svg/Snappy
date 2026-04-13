@@ -6,6 +6,13 @@ import estilos from './PaginaRetornoPago.module.css'
 
 const REF_STORAGE = 'snappy_wompi_ref'
 
+/** Pago confirmado según la fila devuelta por /sincronizar (antes del comprobante). */
+function pagoAprobadoSegunPedidoSync(pedido) {
+  if (!pedido) return false
+  if (pedido.estado === 'pagado') return true
+  return String(pedido.wompi_status || '').toUpperCase() === 'APPROVED'
+}
+
 /**
  * Retorno tras pagar con Wompi Widget (redirect-url + ?id=transacción).
  */
@@ -35,6 +42,10 @@ function PaginaRetornoPago() {
         const sync = await sincronizarPagoWompiApi(transactionId, referenceGuardada)
         if (cancel) return
 
+        if (pagoAprobadoSegunPedidoSync(sync?.pedido)) {
+          vaciarCarrito()
+        }
+
         const refPedido = sync?.pedido?.external_reference || referenceGuardada
         if (!refPedido) {
           throw new Error('No se pudo obtener la referencia del pedido')
@@ -44,7 +55,7 @@ function PaginaRetornoPago() {
         if (cancel) return
         setComprobante(comp)
         sessionStorage.removeItem(REF_STORAGE)
-        if (comp?.estado === 'pagado') {
+        if (comp?.estado === 'pagado' || String(comp?.wompi_status || '').toUpperCase() === 'APPROVED') {
           vaciarCarrito()
         }
       } catch (e) {
