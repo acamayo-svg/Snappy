@@ -8,6 +8,7 @@ import {
   registrarNegocioApi,
   serDomiciliarioApi,
 } from '../servicios/servicioAuth'
+import { ejecutarCierreAuth0Opcional } from '../servicios/tokenSesion'
 
 const ContextoAuth = createContext(null)
 
@@ -143,6 +144,7 @@ export function ProveedorAuth({ children }) {
       setError(null)
       setCargando(false)
     }
+    ejecutarCierreAuth0Opcional()
   }, [])
 
   const valor = {

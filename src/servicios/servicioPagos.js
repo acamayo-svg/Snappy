@@ -1,12 +1,10 @@
-const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
+import { obtenerBearer } from './tokenSesion.js'
 
-function obtenerToken() {
-  return sessionStorage.getItem('snappy_token')
-}
+const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
 /** Respuesta del backend para abrir el widget Wompi. */
 export async function prepararPagoWompiApi(items, opciones = {}) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Debes iniciar sesión para pagar')
   const cuerpo = { items }
   if (opciones.envio) {
@@ -53,7 +51,7 @@ export async function obtenerComprobanteApi(externalReference) {
 }
 
 export async function listarPedidosEstablecimientoApi() {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(`${URL_BASE}/api/pagos/pedidos-establecimiento`, {
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
@@ -64,7 +62,7 @@ export async function listarPedidosEstablecimientoApi() {
 }
 
 export async function avanzarEstadoPedidoEstablecimientoApi(pedidoId, siguiente) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(
     `${URL_BASE}/api/pagos/establecimiento/pedidos/${encodeURIComponent(pedidoId)}`,
@@ -84,7 +82,7 @@ export async function avanzarEstadoPedidoEstablecimientoApi(pedidoId, siguiente)
 }
 
 export async function listarPedidosDomiciliarioApi() {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(`${URL_BASE}/api/pagos/domiciliario/pedidos`, {
     headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
@@ -95,7 +93,7 @@ export async function listarPedidosDomiciliarioApi() {
 }
 
 export async function reclamarPedidoDomiciliarioApi(pedidoId) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(
     `${URL_BASE}/api/pagos/domiciliario/pedidos/${encodeURIComponent(pedidoId)}/reclamar`,
@@ -110,7 +108,7 @@ export async function reclamarPedidoDomiciliarioApi(pedidoId) {
 }
 
 export async function marcarPedidoEnCaminoApi(pedidoId) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(
     `${URL_BASE}/api/pagos/domiciliario/pedidos/${encodeURIComponent(pedidoId)}/en-camino`,
@@ -125,7 +123,7 @@ export async function marcarPedidoEnCaminoApi(pedidoId) {
 }
 
 export async function marcarPedidoEntregadoApi(pedidoId) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   if (!token) throw new Error('Sesión requerida')
   const respuesta = await fetch(
     `${URL_BASE}/api/pagos/domiciliario/pedidos/${encodeURIComponent(pedidoId)}/entregado`,

@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProveedorAuth } from './contextos/ContextoAuth'
 import { ProveedorCarrito } from './contextos/ContextoCarrito'
+import { SincronizarAuth0 } from './componentes/SincronizarAuth0/SincronizarAuth0'
 import BarraMenu from './componentes/BarraMenu/BarraMenu'
 import RutaProtegida from './componentes/RutaProtegida/RutaProtegida'
 import PaginaPrincipal from './paginas/PaginaPrincipal/PaginaPrincipal'
@@ -15,9 +16,13 @@ import PaginaBusqueda from './paginas/PaginaBusqueda/PaginaBusqueda'
 
 import estilos from './App.module.css'
 
+const hayAuth0EnEntorno =
+  Boolean(import.meta.env.VITE_AUTH0_DOMAIN) && Boolean(import.meta.env.VITE_AUTH0_CLIENT_ID)
+
 function App() {
   return (
     <ProveedorAuth>
+      {hayAuth0EnEntorno ? <SincronizarAuth0 /> : null}
       <ProveedorCarrito>
         <BarraMenu />
         <main className={estilos.contenedorPrincipal}>

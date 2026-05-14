@@ -157,6 +157,15 @@ export async function inicializarTabla() {
     `)
 
     await cliente.query(`
+      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS auth0_sub VARCHAR(255)
+    `)
+    await cliente.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_usuarios_auth0_sub_unique
+      ON usuarios (auth0_sub)
+      WHERE auth0_sub IS NOT NULL
+    `)
+
+    await cliente.query(`
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS envio_direccion TEXT
     `)
     await cliente.query(`

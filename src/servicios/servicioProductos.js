@@ -2,14 +2,12 @@
  * Servicio de productos. GET list es público; crear/editar/eliminar requieren token (establecimiento).
  */
 
+import { obtenerBearer } from './tokenSesion.js'
+
 const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
-function obtenerToken() {
-  return sessionStorage.getItem('snappy_token')
-}
-
-function peticion(ruta, opciones = {}) {
-  const token = obtenerToken()
+async function peticion(ruta, opciones = {}) {
+  const token = await obtenerBearer()
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
@@ -82,7 +80,7 @@ export async function eliminarProductoApi(id) {
 
 /** Subir imagen de producto (archivo desde el dispositivo). Devuelve { url } */
 export async function subirImagenProductoApi(archivo) {
-  const token = obtenerToken()
+  const token = await obtenerBearer()
   const formData = new FormData()
   formData.append('imagen', archivo)
   const respuesta = await fetch(`${URL_BASE}/api/productos/subir-imagen`, {

@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../contextos/ContextoAuth'
 import estilos from './PaginaLogin.module.css'
+
+const hayAuth0EnEntorno =
+  Boolean(import.meta.env.VITE_AUTH0_DOMAIN) && Boolean(import.meta.env.VITE_AUTH0_CLIENT_ID)
+
+const SeccionLoginAuth0 = hayAuth0EnEntorno
+  ? lazy(() => import('./SeccionLoginAuth0.jsx').then((m) => ({ default: m.SeccionLoginAuth0 })))
+  : null
 
 function PaginaLogin() {
   const [email, setEmail] = useState('')
@@ -73,6 +80,12 @@ function PaginaLogin() {
           <button type="submit" className={estilos.boton} disabled={cargando}>
             {cargando ? 'Entrando…' : 'Entrar'}
           </button>
+
+          {SeccionLoginAuth0 && (
+            <Suspense fallback={null}>
+              <SeccionLoginAuth0 />
+            </Suspense>
+          )}
 
           <p className={estilos.enlaceRegistro}>
             ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>

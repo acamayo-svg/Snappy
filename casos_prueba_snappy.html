@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snappy — Casos de prueba (vista Excel)</title>
+  <style>
+    :root {
+      --excel-header: #217346;
+      --excel-header-2: #1e5c3a;
+      --grid: #b4b4b4;
+      --bg: #f3f3f3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Calibri, Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: #111;
+    }
+    header {
+      background: linear-gradient(180deg, #fff, #e8e8e8);
+      padding: 12px 16px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    h1 { font-size: 1.15rem; margin: 0 0 8px 0; font-weight: 600; }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tabs button {
+      font: inherit;
+      padding: 8px 14px;
+      border: 1px solid #aaa;
+      background: #e7e7e7;
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+    }
+    .tabs button:hover { background: #ddd; }
+    .tabs button.active {
+      background: #fff;
+      border-bottom-color: #fff;
+      font-weight: 600;
+      color: var(--excel-header);
+    }
+    main { padding: 0 12px 24px; }
+    .sheet {
+      display: none;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 0 6px 6px 6px;
+      padding: 12px;
+      overflow: auto;
+      max-width: 100%;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .sheet.active { display: block; }
+    .sheet h2 {
+      margin: 0 0 10px 0;
+      font-size: 1rem;
+      color: var(--excel-header);
+    }
+    table.excel {
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: max-content;
+    }
+    table.excel th,
+    table.excel td {
+      border: 1px solid var(--grid);
+      padding: 6px 8px;
+      vertical-align: top;
+      max-width: 420px;
+    }
+    table.excel thead th {
+      background: var(--excel-header);
+      color: #fff;
+      font-weight: 600;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    table.excel tbody tr:nth-child(even) { background: #f9f9f9; }
+    table.excel tbody tr:hover { background: #e8f4ec; }
+    .note {
+      font-size: 12px;
+      color: #444;
+      margin-bottom: 10px;
+    }
+    .matrix td:first-child,
+    .matrix th:first-child {
+      background: #e2efda;
+      font-weight: 600;
+      text-align: left;
+      min-width: 220px;
+    }
+    .matrix thead th { background: var(--excel-header-2); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Snappy — Casos de prueba y tablas de decisión</h1>
+    <div class="tabs" role="tablist">
+      <button type="button" class="active" data-sheet="s-casos">Casos (tabla completa)</button>
+      <button type="button" data-sheet="s-d1">Decisión HU-EST-01</button>
+      <button type="button" data-sheet="s-d2">Decisión HU-EST-02</button>
+      <button type="button" data-sheet="s-d3">Decisión HU-CLI-04</button>
+      <button type="button" data-sheet="s-d4">Decisión HU-CLI-06</button>
+      <button type="button" data-sheet="s-d5">Decisión HU-EST-03</button>
+    </div>
+  </header>
+  <main>
+    <section id="s-casos" class="sheet active">
+      <h2>Hoja: Casos de prueba (10 filas)</h2>
+      <p class="note">Desplázate horizontalmente si no ves todas las columnas. Abre en pantalla completa para mejor lectura.</p>
+      <div style="overflow:auto;">
+        <table class="excel">
+          <thead>
+            <tr>
+              <th>ID caso</th>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>HU</th>
+              <th>Descripción</th>
+              <th>Precondiciones</th>
+              <th>Relaciones HU</th>
+              <th>Estado</th>
+              <th>Paso 1</th><th>Resultado 1</th>
+              <th>Paso 2</th><th>Resultado 2</th>
+              <th>Paso 3</th><th>Resultado 3</th>
+              <th>Paso 4</th><th>Resultado 4</th>
+              <th>Paso 5</th><th>Resultado 5</th>
+              <th>Comentarios</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CP-EST-01-FELIZ</td>
+              <td>Registro exitoso de establecimiento</td>
+              <td>Feliz</td>
+              <td>HU-EST-01</td>
+              <td>Validar registro con datos válidos, correo nuevo, código correcto y contraseña válida.</td>
+              <td>Establecimiento no registrado. Correo operativo para código.</td>
+              <td>HU-EST-01 - Registrar establecimiento</td>
+              <td>Pendiente</td>
+              <td>Ingresar al formulario de registro de establecimiento.</td><td>Se muestra el formulario de registro.</td>
+              <td>Diligenciar datos básicos válidos y correo no registrado.</td><td>Permite continuar a verificación.</td>
+              <td>Solicitar envío de código de verificación.</td><td>Envía código al correo.</td>
+              <td>Ingresar código de verificación correcto.</td><td>Valida código y habilita contraseña.</td>
+              <td>Definir contraseña válida y confirmar registro.</td><td>Crea la cuenta exitosamente.</td>
+              <td>Caso feliz HU-EST-01.</td>
+            </tr>
+            <tr>
+              <td>CP-EST-01-NOFELIZ</td>
+              <td>Registro fallido por correo ya registrado</td>
+              <td>No feliz</td>
+              <td>HU-EST-01</td>
+              <td>Impedir registro cuando el correo ya existe.</td>
+              <td>Ya existe cuenta con el correo de prueba.</td>
+              <td>HU-EST-01 - Registrar establecimiento</td>
+              <td>Pendiente</td>
+              <td>Ingresar al formulario de registro.</td><td>Se muestra el formulario.</td>
+              <td>Diligenciar datos básicos válidos.</td><td>Acepta datos básicos.</td>
+              <td>Ingresar correo ya registrado y continuar.</td><td>Mensaje «Correo ya existe».</td>
+              <td>Intentar avanzar a verificación.</td><td>No permite continuar.</td>
+              <td>Intentar finalizar registro.</td><td>No crea la cuenta.</td>
+              <td>No feliz: correo duplicado.</td>
+            </tr>
+            <tr>
+              <td>CP-EST-02-FELIZ</td>
+              <td>Registro exitoso de producto en catálogo</td>
+              <td>Feliz</td>
+              <td>HU-EST-02</td>
+              <td>Registrar producto válido; queda Activo y asociado al establecimiento.</td>
+              <td>Establecimiento autenticado en gestión de menú.</td>
+              <td>HU-EST-02 - Registrar producto en el catálogo</td>
+              <td>Pendiente</td>
+              <td>Ingresar al panel de gestión de menú.</td><td>Opción para agregar producto.</td>
+              <td>Seleccionar «Agregar producto».</td><td>Formulario de producto.</td>
+              <td>Ingresar nombre, precio &gt; 0, unidades, categoría, descripción.</td><td>Valida campos.</td>
+              <td>Confirmar guardado.</td><td>Registra el producto.</td>
+              <td>Consultar en catálogo.</td><td>Aparece Activo y del establecimiento.</td>
+              <td>Caso feliz HU-EST-02.</td>
+            </tr>
+            <tr>
+              <td>CP-EST-02-NOFELIZ</td>
+              <td>Registro fallido por precio inválido</td>
+              <td>No feliz</td>
+              <td>HU-EST-02</td>
+              <td>Rechazar precio igual o menor a cero.</td>
+              <td>Establecimiento autenticado.</td>
+              <td>HU-EST-02 - Registrar producto en el catálogo</td>
+              <td>Pendiente</td>
+              <td>Abrir «Agregar producto».</td><td>Formulario visible.</td>
+              <td>Diligenciar nombre, unidades, categoría, descripción válidos.</td><td>Acepta campos.</td>
+              <td>Ingresar precio 0 o negativo.</td><td>Detecta precio inválido.</td>
+              <td>Confirmar guardado.</td><td>Mensaje de error de validación.</td>
+              <td>Ver listado de productos.</td><td>No se registra el producto.</td>
+              <td>No feliz: precio inválido.</td>
+            </tr>
+            <tr>
+              <td>CP-PED-04-FELIZ</td>
+              <td>Visualización correcta de pedidos recibidos</td>
+              <td>Feliz</td>
+              <td>HU-CLI-04</td>
+              <td>Ver pedidos con datos completos por pestañas.</td>
+              <td>Establecimiento autenticado con pedidos existentes.</td>
+              <td>HU-CLI-04 - Visualizar pedidos recibidos</td>
+              <td>Pendiente</td>
+              <td>Ingresar a pedidos recibidos.</td><td>Pestañas PAGADOS, LISTOS, EN CAMINO, ENTREGADOS.</td>
+              <td>Seleccionar cada pestaña.</td><td>Lista pedidos del estado.</td>
+              <td>Abrir detalle de un pedido.</td><td>Número, productos, monto, estado, dirección, teléfono.</td>
+              <td>Usar botón «Actualizar».</td><td>Refresca la vista.</td>
+              <td>Validar filtro por establecimiento.</td><td>Solo pedidos del establecimiento autenticado.</td>
+              <td>Caso feliz HU-CLI-04 (establecimiento).</td>
+            </tr>
+            <tr>
+              <td>CP-PED-04-NOFELIZ</td>
+              <td>Datos incompletos del cliente</td>
+              <td>No feliz</td>
+              <td>HU-CLI-04</td>
+              <td>Si falta dirección o teléfono, mostrar «No especificado».</td>
+              <td>Pedido donde falte dirección o teléfono del cliente.</td>
+              <td>HU-CLI-04 - Visualizar pedidos recibidos</td>
+              <td>Pendiente</td>
+              <td>Ingresar a pedidos recibidos.</td><td>Carga pedidos.</td>
+              <td>Abrir pedido con datos incompletos.</td><td>Muestra detalle.</td>
+              <td>Revisar dirección.</td><td>Si falta: «No especificado».</td>
+              <td>Revisar teléfono.</td><td>Si falta: «No especificado».</td>
+              <td>Revisar resto del pedido.</td><td>Número, productos, monto, estado visibles sin error.</td>
+              <td>No feliz: datos cliente incompletos.</td>
+            </tr>
+            <tr>
+              <td>CP-CLI-06-FELIZ</td>
+              <td>Calificar y guardar reseña con puntuación válida</td>
+              <td>Feliz</td>
+              <td>HU-CLI-06</td>
+              <td>Pedido Entregado; puntuación 1–5; comentario opcional; guarda y confirma.</td>
+              <td>Cliente autenticado; pedido en estado Entregado.</td>
+              <td>HU-CLI-06 - Calificar y dejar reseña del pedido</td>
+              <td>Pendiente</td>
+              <td>Acceder a Calificar y dejar reseña.</td><td>Formulario de calificación y comentario.</td>
+              <td>Ingresar puntuación entre 1 y 5 (ej. 4).</td><td>Acepta el valor.</td>
+              <td>Opcional: comentario o vacío.</td><td>Permite continuar.</td>
+              <td>Confirmar envío de la reseña.</td><td>Guarda la reseña asociada al pedido.</td>
+              <td>Verificar confirmación en pantalla.</td><td>Confirma guardado exitoso.</td>
+              <td>HU-CLI-06 feliz: Entregado, puntuación 1–5, comentario opcional, persistencia y confirmación.</td>
+            </tr>
+            <tr>
+              <td>CP-CLI-06-NOFELIZ</td>
+              <td>Puntuación fuera del rango 1 a 5</td>
+              <td>No feliz</td>
+              <td>HU-CLI-06</td>
+              <td>No guardar reseña si puntuación fuera de 1–5; no permitir continuar.</td>
+              <td>Cliente autenticado; flujo de calificación disponible.</td>
+              <td>HU-CLI-06 - Calificar y dejar reseña del pedido</td>
+              <td>Pendiente</td>
+              <td>Acceder a Calificar y dejar reseña.</td><td>Formulario visible.</td>
+              <td>Ingresar puntuación inválida (ej. 0 o 6).</td><td>Detecta valor fuera de rango.</td>
+              <td>Intentar guardar.</td><td>No guarda la reseña.</td>
+              <td>Intentar continuar sin corregir.</td><td>No permite continuar con guardado exitoso.</td>
+              <td>Verificar persistencia.</td><td>No hay calificación inválida guardada.</td>
+              <td>HU-CLI-06 no feliz: puntuación inválida; sin guardar; bloqueo hasta corregir.</td>
+            </tr>
+            <tr>
+              <td>CP-EST-03-FELIZ</td>
+              <td>Actualizar precio de producto propio</td>
+              <td>Feliz</td>
+              <td>HU-EST-03</td>
+              <td>Precio nuevo &gt; 0, no vacío; producto propio; confirmación y reflejo en catálogo.</td>
+              <td>Establecimiento autenticado; producto en su catálogo.</td>
+              <td>HU-EST-03 - Actualizar precio del producto</td>
+              <td>Pendiente</td>
+              <td>Ingresar a gestión de menú / catálogo.</td><td>Lista de productos propios.</td>
+              <td>Seleccionar producto y actualizar precio.</td><td>Campo precio con valor actual.</td>
+              <td>Ingresar precio &gt; 0 (no vacío).</td><td>Valida el dato.</td>
+              <td>Confirmar guardado.</td><td>Confirma actualización exitosa.</td>
+              <td>Ver catálogo visible para clientes.</td><td>Se refleja el nuevo precio.</td>
+              <td>HU-EST-03 feliz: producto propio, precio &gt; 0, confirmación, catálogo actualizado.</td>
+            </tr>
+            <tr>
+              <td>CP-EST-03-NOFELIZ</td>
+              <td>Rechazo: precio vacío o no mayor que cero</td>
+              <td>No feliz</td>
+              <td>HU-EST-03</td>
+              <td>No actualizar con precio vacío, cero o negativo.</td>
+              <td>Establecimiento autenticado; producto propio.</td>
+              <td>HU-EST-03 - Actualizar precio del producto</td>
+              <td>Pendiente</td>
+              <td>Abrir actualización de precio.</td><td>Campo visible.</td>
+              <td>Borrar precio o ingresar 0 / negativo.</td><td>Marca inválido u obligatorio.</td>
+              <td>Intentar guardar.</td><td>Error; no confirma éxito.</td>
+              <td>Verificar catálogo.</td><td>Se mantiene precio anterior.</td>
+              <td>Corregir y guardar (caso feliz aparte).</td><td>—</td>
+              <td>HU-EST-03 no feliz: precio vacío o ≤ 0; error; precio anterior se mantiene.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="s-d1" class="sheet matrix">
+      <h2>Tabla de decisión — HU-EST-01 Registrar establecimiento</h2>
+      <p class="note">V = verdadero · F = falso · N/A = no aplica · X = acción que ejecuta el sistema</p>
+      <table class="excel">
+        <thead>
+          <tr>
+            <th>Regla / Condición</th>
+            <th>R1 Éxito</th>
+            <th>R2 Correo duplicado</th>
+            <th>R3 Código incorrecto</th>
+            <th>R4 Datos básicos inválidos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C1: Datos básicos válidos</td><td>V</td><td>V</td><td>V</td><td>F</td></tr>
+          <tr><td>C2: Correo no registrado</td><td>V</td><td>F</td><td>V</td><td>V</td></tr>
+          <tr><td>C3: Código verificación correcto</td><td>V</td><td>N/A</td><td>F</td><td>N/A</td></tr>
+          <tr><td>C4: Contraseña válida</td><td>V</td><td>N/A</td><td>N/A</td><td>N/A</td></tr>
+          <tr><td>A1: Crea cuenta exitosamente</td><td>X</td><td></td><td></td><td></td></tr>
+          <tr><td>A2: Bloquea / mensaje error</td><td></td><td>X</td><td>X</td><td>X</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s-d2" class="sheet matrix">
+      <h2>Tabla de decisión — HU-EST-02 Registrar producto</h2>
+      <table class="excel">
+        <thead>
+          <tr>
+            <th>Regla / Condición</th>
+            <th>R1 Éxito</th>
+            <th>R2 Precio inválido</th>
+            <th>R3 Nombre vacío</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C1: Establecimiento autenticado</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C2: Nombre informado</td><td>V</td><td>V</td><td>F</td></tr>
+          <tr><td>C3: Precio &gt; 0</td><td>V</td><td>F</td><td>V</td></tr>
+          <tr><td>C4: Unidades ≥ 0 (entero)</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C5: Categoría válida</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>A1: Registra producto Activo</td><td>X</td><td></td><td></td></tr>
+          <tr><td>A2: No registra / error</td><td></td><td>X</td><td>X</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s-d3" class="sheet matrix">
+      <h2>Tabla de decisión — HU-CLI-04 Visualizar pedidos</h2>
+      <table class="excel">
+        <thead>
+          <tr>
+            <th>Regla / Condición</th>
+            <th>R1 Datos completos</th>
+            <th>R2 Falta dirección</th>
+            <th>R3 Falta teléfono</th>
+            <th>R4 Faltan ambos</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C1: Establecimiento autenticado</td><td>V</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C2: Hay pedidos del establecimiento</td><td>V</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C3: Dirección registrada</td><td>V</td><td>F</td><td>V</td><td>F</td></tr>
+          <tr><td>C4: Teléfono registrado</td><td>V</td><td>V</td><td>F</td><td>F</td></tr>
+          <tr><td>A1: Muestra vista completa</td><td>X</td><td></td><td></td><td></td></tr>
+          <tr><td>A2: «No especificado» donde falte dato</td><td></td><td>X</td><td>X</td><td>X</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s-d4" class="sheet matrix">
+      <h2>Tabla de decisión — HU-CLI-06 Calificar y dejar reseña del pedido</h2>
+      <table class="excel">
+        <thead>
+          <tr>
+            <th>Regla / Condición</th>
+            <th>R1 Éxito</th>
+            <th>R2 Puntuación fuera de rango</th>
+            <th>R3 Pedido no entregado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C1: Cliente autenticado</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C2: Pedido en estado Entregado</td><td>V</td><td>V</td><td>F</td></tr>
+          <tr><td>C3: Puntuación entre 1 y 5</td><td>V</td><td>F</td><td>N/A</td></tr>
+          <tr><td>C4: Comentario opcional válido si existe</td><td>V</td><td>V</td><td>N/A</td></tr>
+          <tr><td>A1: Guarda reseña y confirma éxito</td><td>X</td><td></td><td></td></tr>
+          <tr><td>A2: No guarda / bloquea continuar</td><td></td><td>X</td><td>X</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s-d5" class="sheet matrix">
+      <h2>Tabla de decisión — HU-EST-03 Actualizar precio del producto</h2>
+      <table class="excel">
+        <thead>
+          <tr>
+            <th>Regla / Condición</th>
+            <th>R1 Éxito</th>
+            <th>R2 Precio inválido o vacío</th>
+            <th>R3 Producto no propio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C1: Establecimiento autenticado</td><td>V</td><td>V</td><td>V</td></tr>
+          <tr><td>C2: Producto propio del catálogo</td><td>V</td><td>V</td><td>F</td></tr>
+          <tr><td>C3: Campo precio no vacío</td><td>V</td><td>F</td><td>V</td></tr>
+          <tr><td>C4: Precio &gt; 0</td><td>V</td><td>F</td><td>V</td></tr>
+          <tr><td>A1: Actualiza precio, confirma y refleja en catálogo</td><td>X</td><td></td><td></td></tr>
+          <tr><td>A2: No actualiza / error o sin permiso</td><td></td><td>X</td><td>X</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll(".tabs button").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-sheet");
+        document.querySelectorAll(".tabs button").forEach(function (b) { b.classList.toggle("active", b === btn); });
+        document.querySelectorAll(".sheet").forEach(function (s) { s.classList.toggle("active", s.id === id); });
+      });
+    });
+  </script>
+</body>
+</html>

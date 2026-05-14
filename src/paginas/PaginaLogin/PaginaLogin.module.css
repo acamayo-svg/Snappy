@@ -126,3 +126,59 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+.separadorAuth0 {
+  margin: 0;
+  text-align: center;
+  font-size: var(--snappy-texto-sm);
+  color: var(--snappy-gris-secundario);
+  position: relative;
+}
+
+.separadorAuth0::before,
+.separadorAuth0::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: var(--snappy-gris-borde);
+}
+
+.separadorAuth0::before {
+  left: 0;
+}
+
+.separadorAuth0::after {
+  right: 0;
+}
+
+.botonAuth0 {
+  padding: 0.85rem 1.25rem;
+  background: var(--snappy-blanco);
+  color: var(--snappy-gris-texto);
+  border: 1px solid var(--snappy-gris-borde);
+  border-radius: var(--snappy-radio-input);
+  font-size: var(--snappy-texto-base);
+  font-weight: var(--snappy-peso-semibold);
+  font-family: var(--snappy-fuente);
+  cursor: pointer;
+  transition:
+    border-color var(--snappy-transicion),
+    background-color var(--snappy-transicion),
+    transform var(--snappy-transicion);
+}
+
+.botonAuth0:hover:not(:disabled) {
+  border-color: var(--snappy-rojo-principal);
+  background: #fffafa;
+}
+
+.botonAuth0:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.botonAuth0:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
