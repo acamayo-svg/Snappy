@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProveedorAuth } from './contextos/ContextoAuth'
 import { ProveedorCarrito } from './contextos/ContextoCarrito'
-import { SincronizarAuth0 } from './componentes/SincronizarAuth0/SincronizarAuth0'
 import BarraMenu from './componentes/BarraMenu/BarraMenu'
 import RutaProtegida from './componentes/RutaProtegida/RutaProtegida'
 import PaginaPrincipal from './paginas/PaginaPrincipal/PaginaPrincipal'
 import PaginaLogin from './paginas/PaginaLogin/PaginaLogin'
 import PaginaRegistro from './paginas/PaginaRegistro/PaginaRegistro'
+import PaginaAuthCallback from './paginas/PaginaAuthCallback/PaginaAuthCallback'
 import PaginaCuenta from './paginas/PaginaCuenta/PaginaCuenta'
 import PaginaCliente from './paginas/PaginaCliente/PaginaCliente'
 import PaginaEstablecimiento from './paginas/PaginaEstablecimiento/PaginaEstablecimiento'
@@ -16,13 +16,9 @@ import PaginaBusqueda from './paginas/PaginaBusqueda/PaginaBusqueda'
 
 import estilos from './App.module.css'
 
-const hayAuth0EnEntorno =
-  Boolean(import.meta.env.VITE_AUTH0_DOMAIN) && Boolean(import.meta.env.VITE_AUTH0_CLIENT_ID)
-
 function App() {
   return (
     <ProveedorAuth>
-      {hayAuth0EnEntorno ? <SincronizarAuth0 /> : null}
       <ProveedorCarrito>
         <BarraMenu />
         <main className={estilos.contenedorPrincipal}>
@@ -30,6 +26,7 @@ function App() {
             <Route path="/" element={<PaginaPrincipal />} />
             <Route path="/login" element={<PaginaLogin />} />
             <Route path="/registro" element={<PaginaRegistro />} />
+            <Route path="/auth/callback" element={<PaginaAuthCallback />} />
             <Route
               path="/cuenta"
               element={

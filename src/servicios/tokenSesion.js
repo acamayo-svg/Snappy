@@ -1,31 +1,12 @@
-/** Token Bearer: prioriza Auth0 (si está registrado el getter) y cae al JWT local en sessionStorage. */
+import { supabase } from '../lib/supabaseCliente.js'
 
-let obtenerTokenAuth0 = null
-let cerrarSesionAuth0 = null
-
-export function configurarObtenerTokenAuth0(fn) {
-  obtenerTokenAuth0 = typeof fn === 'function' ? fn : null
-}
-
-export function configurarCerrarSesionAuth0(fn) {
-  cerrarSesionAuth0 = typeof fn === 'function' ? fn : null
-}
-
-/** Si hay flujo Auth0 activo, dispara cierre en Auth0 (redirección). Devuelve true si se invocó. */
-export function ejecutarCierreAuth0Opcional() {
-  if (!cerrarSesionAuth0) return false
-  cerrarSesionAuth0()
-  return true
-}
-
+/** Prioriza sesión Supabase; si no hay, JWT local legado en sessionStorage. */
 export async function obtenerBearer() {
-  if (obtenerTokenAuth0) {
-    try {
-      const t = await obtenerTokenAuth0()
-      if (t) return t
-    } catch {
-      // Continuar con token local
-    }
+  if (supabase) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (session?.access_token) return session.access_token
   }
   return sessionStorage.getItem('snappy_token')
 }
