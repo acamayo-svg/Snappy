@@ -16,7 +16,7 @@ export default function PaginaRegistro() {
   const [mensaje, setMensaje] = useState(null)
   const [enviando, setEnviando] = useState(false)
 
-  const { usuario, cargando } = useAuth()
+  const { usuario, cargando, refrescarCuenta } = useAuth()
   const navegar = useNavigate()
 
   useEffect(() => {
@@ -74,10 +74,16 @@ export default function PaginaRegistro() {
       const email = correo.trim().toLowerCase()
       const { error: err } = await supabase.auth.verifyOtp({
         email,
-        token: codigo.trim(),
+        token: codigo.replace(/\s/g, ''),
         type: 'email',
       })
       if (err) throw err
+      const cuenta = await refrescarCuenta()
+      if (!cuenta) {
+        setMensaje(
+          'Correo verificado, pero la API Snappy no respondió. Revisa VITE_API_URL en Vercel y SUPABASE_URL / SUPABASE_ANON_KEY en Render.'
+        )
+      }
     } catch (err) {
       setMensaje(err?.message ?? 'Código incorrecto o caducado.')
     } finally {

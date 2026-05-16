@@ -15,7 +15,7 @@ export default function PaginaLogin() {
   const [mensaje, setMensaje] = useState(null)
   const [enviando, setEnviando] = useState(false)
 
-  const { usuario, cargando } = useAuth()
+  const { usuario, cargando, refrescarCuenta } = useAuth()
   const navegar = useNavigate()
 
   useEffect(() => {
@@ -67,10 +67,16 @@ export default function PaginaLogin() {
       const correo = email.trim().toLowerCase()
       const { error: err } = await supabase.auth.verifyOtp({
         email: correo,
-        token: codigo.trim(),
+        token: codigo.replace(/\s/g, ''),
         type: 'email',
       })
       if (err) throw err
+      const cuenta = await refrescarCuenta()
+      if (!cuenta) {
+        setMensaje(
+          'Sesión iniciada, pero la API no cargó tu perfil. Comprueba VITE_API_URL y las variables SUPABASE en Render.'
+        )
+      }
     } catch (err) {
       setMensaje(err?.message ?? 'Código incorrecto o caducado.')
     } finally {

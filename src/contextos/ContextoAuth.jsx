@@ -12,7 +12,30 @@ import { supabase } from '../lib/supabaseCliente.js'
 
 const ContextoAuth = createContext(null)
 
+/** Quita #access_token=… de la URL tras procesar la sesión (OAuth / magic link). */
+function useLimpiezaHashSesion() {
+  useEffect(() => {
+    if (!supabase) return undefined
+    void supabase.auth.getSession().finally(() => {
+      queueMicrotask(() => {
+        const h = window.location.hash
+        if (
+          h &&
+          (h.includes('access_token') || h.includes('refresh_token') || h.includes('error='))
+        ) {
+          window.history.replaceState(
+            null,
+            document.title,
+            `${window.location.pathname}${window.location.search}`
+          )
+        }
+      })
+    })
+  }, [])
+}
+
 export function ProveedorAuth({ children }) {
+  useLimpiezaHashSesion()
   const [usuario, setUsuario] = useState(() => {
     const guardado = sessionStorage.getItem('snappy_usuario')
     if (!guardado) return null
@@ -36,7 +59,7 @@ export function ProveedorAuth({ children }) {
     if (!supabase) return undefined
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         sessionStorage.removeItem('snappy_token')
         sessionStorage.removeItem('snappy_usuario')
@@ -45,18 +68,26 @@ export function ProveedorAuth({ children }) {
       }
       if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
         sessionStorage.removeItem('snappy_token')
-        try {
-          const data = await obtenerMiCuentaApi()
-          const merged = {
-            ...data.usuario,
-            establecimiento: data.establecimiento ?? null,
-            domiciliario: data.domiciliario ?? null,
-            envio: data.envio ?? { direccion: '', telefono: '', nota: '' },
-          }
-          actualizarUsuario(merged)
-        } catch {
-          /* API no disponible o token aún no enlazado */
-        }
+        /** No usar await dentro del listener: bloquea el canal interno de Auth y congela verifyOtp/signOut. */
+        queueMicrotask(() => {
+          void (async () => {
+            try {
+              const data = await obtenerMiCuentaApi()
+              const merged = {
+                ...data.usuario,
+                establecimiento: data.establecimiento ?? null,
+                domiciliario: data.domiciliario ?? null,
+                envio: data.envio ?? { direccion: '', telefono: '', nota: '' },
+              }
+              actualizarUsuario(merged)
+              setError(null)
+            } catch {
+              setError(
+                'No se pudo cargar tu cuenta en el servidor. Comprueba VITE_API_URL y que Render tenga SUPABASE_URL y SUPABASE_ANON_KEY.'
+              )
+            }
+          })()
+        })
       }
     })
     return () => subscription.unsubscribe()
@@ -166,18 +197,14 @@ export function ProveedorAuth({ children }) {
     }
   }, [actualizarUsuario, refrescarCuenta])
 
-  const cerrarSesion = useCallback(async () => {
-    setCargando(true)
-    try {
-      await cerrarSesionApi()
-      if (supabase) await supabase.auth.signOut()
-    } finally {
-      sessionStorage.removeItem('snappy_token')
-      sessionStorage.removeItem('snappy_usuario')
-      setUsuario(null)
-      setError(null)
-      setCargando(false)
-    }
+  const cerrarSesion = useCallback(() => {
+    sessionStorage.removeItem('snappy_token')
+    sessionStorage.removeItem('snappy_usuario')
+    setUsuario(null)
+    setError(null)
+    void cerrarSesionApi()
+    /** Evitar await: signOut puede quedar bloqueado si el listener de Auth estaba en deadlock. */
+    if (supabase) void supabase.auth.signOut().catch(() => {})
   }, [])
 
   const valor = {
