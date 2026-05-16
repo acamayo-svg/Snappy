@@ -3,12 +3,14 @@
  * Respuesta: { token, usuario: { id, email, nombre, roles } }
  */
 
-import { obtenerBearer } from './tokenSesion.js'
-
 const URL_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
-async function peticion(ruta, opciones = {}) {
-  const token = await obtenerBearer()
+function obtenerToken() {
+  return sessionStorage.getItem('snappy_token')
+}
+
+function peticion(ruta, opciones = {}) {
+  const token = obtenerToken()
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

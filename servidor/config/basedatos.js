@@ -157,15 +157,6 @@ export async function inicializarTabla() {
     `)
 
     await cliente.query(`
-      ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS supabase_auth_id UUID
-    `)
-    await cliente.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_usuarios_supabase_auth_id_unique
-      ON usuarios (supabase_auth_id)
-      WHERE supabase_auth_id IS NOT NULL
-    `)
-
-    await cliente.query(`
       ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS envio_direccion TEXT
     `)
     await cliente.query(`

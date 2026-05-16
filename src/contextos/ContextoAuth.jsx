@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback } from 'react'
 import { crearUsuario } from '../logica/usuarios/UsuarioFactory'
 import {
   iniciarSesionApi,
@@ -8,34 +8,10 @@ import {
   registrarNegocioApi,
   serDomiciliarioApi,
 } from '../servicios/servicioAuth'
-import { supabase } from '../lib/supabaseCliente.js'
 
 const ContextoAuth = createContext(null)
 
-/** Quita #access_token=… de la URL tras procesar la sesión (OAuth / magic link). */
-function useLimpiezaHashSesion() {
-  useEffect(() => {
-    if (!supabase) return undefined
-    void supabase.auth.getSession().finally(() => {
-      queueMicrotask(() => {
-        const h = window.location.hash
-        if (
-          h &&
-          (h.includes('access_token') || h.includes('refresh_token') || h.includes('error='))
-        ) {
-          window.history.replaceState(
-            null,
-            document.title,
-            `${window.location.pathname}${window.location.search}`
-          )
-        }
-      })
-    })
-  }, [])
-}
-
 export function ProveedorAuth({ children }) {
-  useLimpiezaHashSesion()
   const [usuario, setUsuario] = useState(() => {
     const guardado = sessionStorage.getItem('snappy_usuario')
     if (!guardado) return null
@@ -48,50 +24,6 @@ export function ProveedorAuth({ children }) {
   })
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState(null)
-
-  const actualizarUsuario = useCallback((datosUsuario) => {
-    const instancia = crearUsuario(datosUsuario)
-    setUsuario(instancia)
-    sessionStorage.setItem('snappy_usuario', JSON.stringify(datosUsuario))
-  }, [])
-
-  useEffect(() => {
-    if (!supabase) return undefined
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        sessionStorage.removeItem('snappy_token')
-        sessionStorage.removeItem('snappy_usuario')
-        setUsuario(null)
-        return
-      }
-      if (session && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) {
-        sessionStorage.removeItem('snappy_token')
-        /** No usar await dentro del listener: bloquea el canal interno de Auth y congela verifyOtp/signOut. */
-        queueMicrotask(() => {
-          void (async () => {
-            try {
-              const data = await obtenerMiCuentaApi()
-              const merged = {
-                ...data.usuario,
-                establecimiento: data.establecimiento ?? null,
-                domiciliario: data.domiciliario ?? null,
-                envio: data.envio ?? { direccion: '', telefono: '', nota: '' },
-              }
-              actualizarUsuario(merged)
-              setError(null)
-            } catch {
-              setError(
-                'No se pudo cargar tu cuenta en el servidor. Comprueba VITE_API_URL y que Render tenga SUPABASE_URL y SUPABASE_ANON_KEY.'
-              )
-            }
-          })()
-        })
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [actualizarUsuario])
 
   const iniciarSesion = useCallback(async (credenciales) => {
     setError(null)
@@ -131,6 +63,12 @@ export function ProveedorAuth({ children }) {
     }
   }, [])
 
+  const actualizarUsuario = useCallback((datosUsuario) => {
+    const instancia = crearUsuario(datosUsuario)
+    setUsuario(instancia)
+    sessionStorage.setItem('snappy_usuario', JSON.stringify(datosUsuario))
+  }, [])
+
   const cambiarRolActivo = useCallback((rol) => {
     setUsuario((prev) => {
       if (!prev || !prev.roles.includes(rol)) return prev
@@ -160,25 +98,22 @@ export function ProveedorAuth({ children }) {
     }
   }, [actualizarUsuario])
 
-  const registrarNegocio = useCallback(
-    async (datos) => {
-      setError(null)
-      setCargando(true)
-      try {
-        const { usuario: datosUsuario } = await registrarNegocioApi(datos)
-        actualizarUsuario(datosUsuario)
-        await refrescarCuenta()
-        return datosUsuario
-      } catch (e) {
-        const mensaje = e?.message ?? 'Error al registrar el negocio'
-        setError(mensaje)
-        throw e
-      } finally {
-        setCargando(false)
-      }
-    },
-    [actualizarUsuario, refrescarCuenta]
-  )
+  const registrarNegocio = useCallback(async (datos) => {
+    setError(null)
+    setCargando(true)
+    try {
+      const { usuario: datosUsuario } = await registrarNegocioApi(datos)
+      actualizarUsuario(datosUsuario)
+      await refrescarCuenta()
+      return datosUsuario
+    } catch (e) {
+      const mensaje = e?.message ?? 'Error al registrar el negocio'
+      setError(mensaje)
+      throw e
+    } finally {
+      setCargando(false)
+    }
+  }, [actualizarUsuario, refrescarCuenta])
 
   const serDomiciliario = useCallback(async () => {
     setError(null)
@@ -197,14 +132,17 @@ export function ProveedorAuth({ children }) {
     }
   }, [actualizarUsuario, refrescarCuenta])
 
-  const cerrarSesion = useCallback(() => {
-    sessionStorage.removeItem('snappy_token')
-    sessionStorage.removeItem('snappy_usuario')
-    setUsuario(null)
-    setError(null)
-    void cerrarSesionApi()
-    /** Evitar await: signOut puede quedar bloqueado si el listener de Auth estaba en deadlock. */
-    if (supabase) void supabase.auth.signOut().catch(() => {})
+  const cerrarSesion = useCallback(async () => {
+    setCargando(true)
+    try {
+      await cerrarSesionApi()
+    } finally {
+      sessionStorage.removeItem('snappy_token')
+      sessionStorage.removeItem('snappy_usuario')
+      setUsuario(null)
+      setError(null)
+      setCargando(false)
+    }
   }, [])
 
   const valor = {

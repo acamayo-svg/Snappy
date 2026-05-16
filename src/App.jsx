@@ -6,7 +6,6 @@ import RutaProtegida from './componentes/RutaProtegida/RutaProtegida'
 import PaginaPrincipal from './paginas/PaginaPrincipal/PaginaPrincipal'
 import PaginaLogin from './paginas/PaginaLogin/PaginaLogin'
 import PaginaRegistro from './paginas/PaginaRegistro/PaginaRegistro'
-import PaginaAuthCallback from './paginas/PaginaAuthCallback/PaginaAuthCallback'
 import PaginaCuenta from './paginas/PaginaCuenta/PaginaCuenta'
 import PaginaCliente from './paginas/PaginaCliente/PaginaCliente'
 import PaginaEstablecimiento from './paginas/PaginaEstablecimiento/PaginaEstablecimiento'
@@ -26,7 +25,6 @@ function App() {
             <Route path="/" element={<PaginaPrincipal />} />
             <Route path="/login" element={<PaginaLogin />} />
             <Route path="/registro" element={<PaginaRegistro />} />
-            <Route path="/auth/callback" element={<PaginaAuthCallback />} />
             <Route
               path="/cuenta"
               element={
